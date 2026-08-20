@@ -11,31 +11,48 @@ import org.springframework.web.context.request.WebRequest;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException businessException,
-            WebRequest request) {
-        ErrorResponse response = ErrorResponse.builder()
-                .message(businessException.getMessage())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Business Error")
-                .path(request.getDescription(false))
-                .timestamp(LocalDateTime.now())
-                .build();
+        @ExceptionHandler(BusinessException.class)
+        public ResponseEntity<ErrorResponse> handleBusinessException(
+                        BusinessException businessException,
+                        WebRequest request) {
+                ErrorResponse response = ErrorResponse.builder()
+                                .message(businessException.getMessage())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .error("Business Error")
+                                .path(request.getDescription(false))
+                                .timestamp(LocalDateTime.now())
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            ResourceNotFoundException resourceNotFoundException, WebRequest request) {
-        ErrorResponse response = ErrorResponse.builder()
-                .message(resourceNotFoundException.getMessage())
-                .status(HttpStatus.NOT_FOUND.value())
-                .error("Resource Not Found")
-                .path(request.getDescription(false))
-                .timestamp(LocalDateTime.now())
-                .build();
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+                        ResourceNotFoundException resourceNotFoundException,
+                        WebRequest request) {
+                ErrorResponse response = ErrorResponse.builder()
+                                .message(resourceNotFoundException.getMessage())
+                                .status(HttpStatus.NOT_FOUND.value())
+                                .error("Resource Not Found")
+                                .path(request.getDescription(false))
+                                .timestamp(LocalDateTime.now())
+                                .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        @ExceptionHandler(UnauthorizedException.class)
+        public ResponseEntity<ErrorResponse> handleUnauthorizedException(
+                        UnauthorizedException unauthorizedException,
+                        WebRequest request) {
+                ErrorResponse response = ErrorResponse.builder()
+                                .message(unauthorizedException.getMessage())
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .error("Unauthorized")
+                                .path(request.getDescription(false))
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
 }
