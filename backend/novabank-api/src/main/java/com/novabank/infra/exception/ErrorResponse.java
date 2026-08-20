@@ -10,6 +10,14 @@ public class ErrorResponse {
     private final String path;
     private final LocalDateTime timestamp;
 
+    private ErrorResponse(Builder builder) {
+        this.message = builder.message;
+        this.status = builder.status;
+        this.error = builder.error;
+        this.path = builder.path;
+        this.timestamp = builder.timestamp;
+    }
+
     public static class Builder {
         private String message;
         private int status;
