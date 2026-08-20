@@ -18,6 +18,10 @@ public class ErrorResponse {
         this.timestamp = builder.timestamp;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public String getMessage() {
         return message;
     }
