@@ -19,6 +19,18 @@
 		<java.version>21</java.version>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>me.paulschwarz</groupId>
+				<artifactId>spring-dotenv-bom</artifactId>
+				<version>5.1.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<!-- ===== MONITORING ===== -->
 		<dependency>
@@ -42,6 +54,10 @@
 			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
@@ -58,6 +74,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- ===== ENVIRONMENT VARIABLES ===== -->
+		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>springboot4-dotenv</artifactId>
 			<optional>true</optional>
 		</dependency>
 
