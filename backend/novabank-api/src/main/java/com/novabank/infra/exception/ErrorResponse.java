@@ -18,6 +18,26 @@ public class ErrorResponse {
         this.timestamp = builder.timestamp;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
     public static class Builder {
         private String message;
         private int status;
