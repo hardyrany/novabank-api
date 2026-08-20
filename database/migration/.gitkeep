@@ -1,3 +1,0 @@
-# This directory contains Flyway migration scripts.
-# Migrations follow the pattern: V{version}__{description}.sql
-# Example: V1__create_customers_table.sql
