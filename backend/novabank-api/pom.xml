@@ -99,48 +99,70 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
-		<!-- ===== CODE QUALITY ===== -->
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-checkstyle-plugin</artifactId>
-			<version>3.6.0</version>
-			<configuration>
-				<configLocation>checkstyle.xml</configLocation>
-				<consoleOutput>true</consoleOutput>
-				<failsOnError>true</failsOnError>
-				<linkXRef>false</linkXRef>
-			</configuration>
-			<executions>
-				<execution>
-					<id>validate</id>
-					<phase>validate</phase>
-					<goals>
-						<goal>check</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
+			<!-- ===== CODE QUALITY ===== -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<linkXRef>false</linkXRef>
+				</configuration>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-		<plugin>
-			<groupId>com.github.spotbugs</groupId>
-			<artifactId>spotbugs-maven-plugin</artifactId>
-			<version>4.8.6.6</version>
-			<configuration>
-				<effort>Max</effort>
-				<threshold>Medium</threshold>
-				<xmlOutput>true</xmlOutput>
-				<failOnError>true</failOnError>
-			</configuration>
-			<executions>
-				<execution>
-					<id>analyze</id>
-					<phase>verify</phase>
-					<goals>
-						<goal>check</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.8.6.6</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Medium</threshold>
+					<xmlOutput>true</xmlOutput>
+					<failOnError>true</failOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- ===== SECURITY SCANNING ===== -->
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>10.0.4</version>
+				<configuration>
+					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+					<format>HTML</format>
+					<outputDirectory>target/dependency-check</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<id>security-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
