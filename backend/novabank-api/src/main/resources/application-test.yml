@@ -15,7 +15,7 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: true
-        locations: filesystem:../database/migrations
+        locations: filesystem:../database/migration
 
 logging:
     level:
