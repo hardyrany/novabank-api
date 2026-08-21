@@ -1,0 +1,21 @@
+name: Block direct PR to main
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          if [ "$SOURCE_BRANCH" != "develop" ]; then
+            echo "❌ PRs to main only come from develop."
+            echo "A branch '$SOURCE_BRANCH' not allowed."
+            exit 1
+          else
+            echo "✅ PR from develop to main allowed."
+          fi
