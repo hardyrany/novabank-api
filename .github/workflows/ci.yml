@@ -61,4 +61,4 @@ jobs:
                   NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
               run: |
                   cd backend/novabank-api
-                  ./mvnw clean verify -Dspring.profiles.active=test -DnvdApiKey=$NVD_API_KEY -DautoUpdate=false
+                  ./mvnw clean verify -Dspring.profiles.active=test -DnvdApiKey=$NVD_API_KEY
