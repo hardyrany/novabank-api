@@ -25,3 +25,14 @@ CREATE TABLE IF NOT EXISTS customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Index for performance
+CREATE INDEX idx_customers_email ON customers (email);
+
+CREATE INDEX idx_customers_document_number ON customers (document_number);
+
+CREATE INDEX idx_customers_is_active ON customers (is_active);
+
+CREATE INDEX idx_customers_first_name ON customers (first_name);
+
+CREATE INDEX idx_customers_last_name ON customers (last_name);
