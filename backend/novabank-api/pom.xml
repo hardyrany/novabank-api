@@ -139,7 +139,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.8.6.6</version>
+				<version>4.10.3.0</version>
 				<configuration>
 					<effort>Max</effort>
 					<threshold>Medium</threshold>
@@ -161,7 +161,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>12.1.0</version>
+				<version>13.0.0</version>
 				<configuration>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
