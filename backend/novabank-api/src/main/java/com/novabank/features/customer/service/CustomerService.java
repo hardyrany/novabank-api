@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
 
 @Service
 public class CustomerService {
@@ -29,6 +30,12 @@ public class CustomerService {
         }
 
         return customerRepository.save(customer);
+    }
+
+    public Customer getCustomerById(Long id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found with id: " + id));
     }
 
 }
