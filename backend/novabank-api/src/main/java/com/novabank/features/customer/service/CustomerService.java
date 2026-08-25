@@ -44,4 +44,10 @@ public class CustomerService {
                         "Email not found: " + email));
     }
 
+    public Customer getCustomerByDocumentNumber(String documentNumber) {
+        return customerRepository.findByDocumentNumber(documentNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Document number not found: " + documentNumber));
+    }
+
 }
