@@ -90,4 +90,14 @@ public class CustomerService {
 
         customerRepository.save(customer);
     }
+
+    @Transactional
+    public void activateCustomer(Long id) {
+
+        Customer customer = getCustomerById(id);
+
+        customer.setActive(true);
+
+        customerRepository.save(customer);
+    }
 }
