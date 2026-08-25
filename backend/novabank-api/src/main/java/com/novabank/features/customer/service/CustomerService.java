@@ -80,4 +80,14 @@ public class CustomerService {
 
         return customerRepository.save(customer);
     }
+
+    @Transactional
+    public void deleteCustomer(Long id) {
+
+        Customer customer = getCustomerById(id);
+
+        customer.setActive(false);
+
+        customerRepository.save(customer);
+    }
 }
