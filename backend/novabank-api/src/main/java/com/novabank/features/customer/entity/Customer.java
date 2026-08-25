@@ -127,6 +127,10 @@ public class Customer {
         return documentType;
     }
 
+    public void setDocumentType(String documentType) {
+        this.documentType = documentType;
+    }
+
     public LocalDate getBirthDate() {
         return birthDate;
     }
@@ -166,5 +170,4 @@ public class Customer {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
 }
