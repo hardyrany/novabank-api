@@ -38,4 +38,10 @@ public class CustomerService {
                         "Customer not found with id: " + id));
     }
 
+    public Customer getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Email not found: " + email));
+    }
+
 }
