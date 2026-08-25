@@ -66,4 +66,18 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
+    @Transactional
+    public Customer updateCustomer(Long id, Customer customerDetails) {
+
+        Customer customer = getCustomerById(id);
+
+        customer.setFirstName(customerDetails.getFirstName());
+        customer.setMiddleName(customerDetails.getMiddleName());
+        customer.setLastName(customerDetails.getLastName());
+        customer.setPhone(customerDetails.getPhone());
+        customer.setBirthDate(customerDetails.getBirthDate());
+        customer.setAddress(customerDetails.getAddress());
+
+        return customerRepository.save(customer);
+    }
 }
