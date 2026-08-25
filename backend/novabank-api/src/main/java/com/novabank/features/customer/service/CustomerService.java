@@ -1,5 +1,7 @@
 package com.novabank.features.customer.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,16 @@ public class CustomerService {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Customer not found with id: " + id));
+    }
+
+    public List<Customer> searchCustomersByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return customerRepository.findAll();
+        }
+
+        return customerRepository
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                        name, name);
     }
 
     public Customer getCustomerByEmail(String email) {
