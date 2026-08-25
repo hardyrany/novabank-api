@@ -1,6 +1,6 @@
 package com.novabank.features.customer.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -33,7 +33,7 @@ public class CustomerRequest {
     @Size(max = 20, message = "Document type must not exceed 20 characters")
     private String documentType;
 
-    private LocalDateTime birthDate;
+    private LocalDate birthDate;
 
     private String address;
 
@@ -93,11 +93,11 @@ public class CustomerRequest {
         this.documentType = documentType;
     }
 
-    public LocalDateTime getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDateTime birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
