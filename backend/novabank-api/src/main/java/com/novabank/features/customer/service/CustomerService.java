@@ -62,4 +62,8 @@ public class CustomerService {
                         "Document number not found: " + documentNumber));
     }
 
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
+    }
+
 }
