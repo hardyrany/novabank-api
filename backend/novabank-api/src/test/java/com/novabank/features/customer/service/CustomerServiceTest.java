@@ -71,4 +71,29 @@ public class CustomerServiceTest {
 
                 verify(customerRepository, never()).save(any());
         }
+
+        @Test
+        void createCustomer_WithDuplicateDocument_ShouldThrowBusinessException() {
+
+                // Arrange
+                Customer customer = new Customer();
+
+                customer.setEmail("john@example.com");
+                customer.setDocumentNumber("123456789");
+
+                when(customerRepository
+                                .existsByEmail(customer.getEmail()))
+                                .thenReturn(false);
+                when(customerRepository
+                                .existsByDocumentNumber(customer.getDocumentNumber()))
+                                .thenReturn(true);
+
+                // Act & Assert
+                assertThatThrownBy(() -> customerService.createCustomer(customer))
+                                .isInstanceOf(BusinessException.class)
+                                .hasMessage("Document number already exists: 123456789");
+
+                verify(customerRepository, never()).save(any());
+
+        }
 }
