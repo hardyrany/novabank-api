@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -94,6 +95,26 @@ public class CustomerServiceTest {
                                 .hasMessage("Document number already exists: 123456789");
 
                 verify(customerRepository, never()).save(any());
+        }
 
+        @Test
+        void getCustomerById_ShouldReturnCustomer() {
+
+                // Arrange
+                Long customerId = 1L;
+                Customer customer = new Customer();
+
+                customer.setId(customerId);
+
+                when(customerRepository
+                                .findById(customerId))
+                                .thenReturn(Optional.of(customer));
+
+                // Act
+                Customer result = customerService.getCustomerById(customerId);
+
+                // Assert
+                assertThat(result).isNotNull();
+                assertThat(result.getId()).isEqualTo(customerId);
         }
 }
