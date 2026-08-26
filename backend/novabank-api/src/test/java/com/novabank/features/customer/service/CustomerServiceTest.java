@@ -1,4 +1,4 @@
-package com.novabank.features.customer;
+package com.novabank.features.customer.service;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
