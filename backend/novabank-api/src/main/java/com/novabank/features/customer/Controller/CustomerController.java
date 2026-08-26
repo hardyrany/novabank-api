@@ -120,4 +120,12 @@ public class CustomerController {
                 return ResponseEntity.ok(customerMapper.toResponse(updatedCustomer));
         }
 
+        @PatchMapping("/{id}/deactivate")
+        public ResponseEntity<Customer> deactivateCustomer(
+                        @PathVariable Long id) {
+
+                customerService.deleteCustomer(id);
+
+                return ResponseEntity.noContent().build();
+        }
 }
