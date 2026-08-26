@@ -121,7 +121,7 @@ public class CustomerController {
         }
 
         @PatchMapping("/{id}/deactivate")
-        public ResponseEntity<Customer> deactivateCustomer(
+        public ResponseEntity<Void> deactivateCustomer(
                         @PathVariable Long id) {
 
                 customerService.deleteCustomer(id);
