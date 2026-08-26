@@ -3,6 +3,7 @@ package com.novabank.features.customer.mapper;
 import org.springframework.stereotype.Component;
 
 import com.novabank.features.customer.dto.CustomerRequest;
+import com.novabank.features.customer.dto.CustomerResponse;
 import com.novabank.features.customer.entity.Customer;
 
 @Component
@@ -23,6 +24,28 @@ public class CustomerMapper {
         customer.setAddress(request.getAddress());
 
         return customer;
+
+    }
+
+    public CustomerResponse toResponse(Customer customer) {
+
+        CustomerResponse response = new CustomerResponse();
+
+        response.setId(customer.getId());
+        response.setFirstName(customer.getFirstName());
+        response.setMiddleName(customer.getMiddleName());
+        response.setLastName(customer.getLastName());
+        response.setEmail(customer.getEmail());
+        response.setPhone(customer.getPhone());
+        response.setDocumentNumber(customer.getDocumentNumber());
+        response.setDocumentType(customer.getDocumentType());
+        response.setBirthDate(customer.getBirthDate());
+        response.setAddress(customer.getAddress());
+        response.setActive(customer.isActive());
+        response.setCreatedAt(customer.getCreatedAt());
+        response.setUpdatedAt(customer.getUpdatedAt());
+
+        return response;
 
     }
 }
