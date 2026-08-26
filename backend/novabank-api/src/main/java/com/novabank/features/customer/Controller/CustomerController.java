@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -99,4 +101,23 @@ public class CustomerController {
 
                 return ResponseEntity.ok(responses);
         }
+
+        @PutMapping("/{id}")
+        public ResponseEntity<CustomerResponse> updateCustomer(
+                        @PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
+
+                Customer customer = new Customer();
+
+                customer.setFirstName(request.getFirstName());
+                customer.setMiddleName(request.getMiddleName());
+                customer.setLastName(request.getLastName());
+                customer.setPhone(request.getPhone());
+                customer.setBirthDate(request.getBirthDate());
+                customer.setAddress(request.getAddress());
+
+                Customer updatedCustomer = customerService.updateCustomer(id, customer);
+
+                return ResponseEntity.ok(customerMapper.toResponse(updatedCustomer));
+        }
+
 }
