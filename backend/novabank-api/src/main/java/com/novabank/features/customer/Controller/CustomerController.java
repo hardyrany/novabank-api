@@ -1,7 +1,5 @@
 package com.novabank.features.customer.Controller;
 
-import javax.print.DocFlavor.READER;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,18 +42,35 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> getCustomerById(
+            @PathVariable Long id) {
 
-        Customer customer = customerService.getCustomerById(id);
+        Customer customer = customerService
+                .getCustomerById(id);
 
-        return ResponseEntity.ok(customerMapper.toResponse(customer));
+        return ResponseEntity.ok(
+                customerMapper.toResponse(customer));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<CustomerResponse> getCustomerByEmail(@PathVariable String email) {
+    public ResponseEntity<CustomerResponse> getCustomerByEmail(
+            @PathVariable String email) {
 
-        Customer customer = customerService.getCustomerByEmail(email);
+        Customer customer = customerService
+                .getCustomerByEmail(email);
 
-        return ResponseEntity.ok(customerMapper.toResponse(customer));
+        return ResponseEntity.ok(
+                customerMapper.toResponse(customer));
+    }
+
+    @GetMapping("/document/{documentNumber}")
+    public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
+            @PathVariable String documentNumber) {
+
+        Customer customer = customerService
+                .getCustomerByDocumentNumber(documentNumber);
+
+        return ResponseEntity.ok(
+                customerMapper.toResponse(customer));
     }
 }
