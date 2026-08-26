@@ -128,4 +128,13 @@ public class CustomerController {
 
                 return ResponseEntity.noContent().build();
         }
+
+        @PatchMapping("/{id}/activate")
+        public ResponseEntity<Void> activateCustomer(
+                        @PathVariable Long id) {
+
+                customerService.activateCustomer(id);
+
+                return ResponseEntity.noContent().build();
+        }
 }
