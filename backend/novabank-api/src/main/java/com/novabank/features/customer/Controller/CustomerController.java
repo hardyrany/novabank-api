@@ -51,4 +51,11 @@ public class CustomerController {
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<CustomerResponse> getCustomerByEmail(@PathVariable String email) {
+
+        Customer customer = customerService.getCustomerByEmail(email);
+
+        return ResponseEntity.ok(customerMapper.toResponse(customer));
+    }
 }
