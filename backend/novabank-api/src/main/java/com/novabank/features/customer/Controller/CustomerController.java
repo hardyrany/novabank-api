@@ -1,5 +1,7 @@
 package com.novabank.features.customer.Controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,56 +23,67 @@ import jakarta.validation.Valid;
 @RequestMapping("api/v1/customers")
 public class CustomerController {
 
-    private final CustomerService customerService;
-    private final CustomerMapper customerMapper;
+        private final CustomerService customerService;
+        private final CustomerMapper customerMapper;
 
-    public CustomerController(CustomerService customerService, CustomerMapper customerMapper) {
-        this.customerService = customerService;
-        this.customerMapper = customerMapper;
-    }
+        public CustomerController(CustomerService customerService, CustomerMapper customerMapper) {
+                this.customerService = customerService;
+                this.customerMapper = customerMapper;
+        }
 
-    @PostMapping
-    public ResponseEntity<CustomerResponse> createCustomer(
-            @Valid @RequestBody CustomerRequest request) {
+        @PostMapping
+        public ResponseEntity<CustomerResponse> createCustomer(
+                        @Valid @RequestBody CustomerRequest request) {
 
-        Customer customer = new CustomerMapper().toEntity(request);
+                Customer customer = new CustomerMapper().toEntity(request);
 
-        Customer savedCustomer = customerService.createCustomer(customer);
+                Customer savedCustomer = customerService.createCustomer(customer);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(customerMapper.toResponse(savedCustomer));
-    }
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(customerMapper.toResponse(savedCustomer));
+        }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomerById(
-            @PathVariable Long id) {
+        @GetMapping("/{id}")
+        public ResponseEntity<CustomerResponse> getCustomerById(
+                        @PathVariable Long id) {
 
-        Customer customer = customerService
-                .getCustomerById(id);
+                Customer customer = customerService
+                                .getCustomerById(id);
 
-        return ResponseEntity.ok(
-                customerMapper.toResponse(customer));
-    }
+                return ResponseEntity.ok(
+                                customerMapper.toResponse(customer));
+        }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<CustomerResponse> getCustomerByEmail(
-            @PathVariable String email) {
+        @GetMapping("/email/{email}")
+        public ResponseEntity<CustomerResponse> getCustomerByEmail(
+                        @PathVariable String email) {
 
-        Customer customer = customerService
-                .getCustomerByEmail(email);
+                Customer customer = customerService
+                                .getCustomerByEmail(email);
 
-        return ResponseEntity.ok(
-                customerMapper.toResponse(customer));
-    }
+                return ResponseEntity.ok(
+                                customerMapper.toResponse(customer));
+        }
 
-    @GetMapping("/document/{documentNumber}")
-    public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
-            @PathVariable String documentNumber) {
+        @GetMapping("/document/{documentNumber}")
+        public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
+                        @PathVariable String documentNumber) {
 
-        Customer customer = customerService
-                .getCustomerByDocumentNumber(documentNumber);
+                Customer customer = customerService
+                                .getCustomerByDocumentNumber(documentNumber);
 
-        return ResponseEntity.ok(
-                customerMapper.toResponse(customer));
-    }
+                return ResponseEntity.ok(
+                                customerMapper.toResponse(customer));
+        }
+
+        @GetMapping
+        public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+
+                List<Customer> customers = customerService.getAllCustomers();
+                List<CustomerResponse> responses = customers.stream()
+                                .map(customerMapper::toResponse)
+                                .toList();
+
+                return ResponseEntity.ok(responses);
+        }
 }
