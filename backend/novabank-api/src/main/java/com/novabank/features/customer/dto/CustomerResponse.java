@@ -1,5 +1,6 @@
 package com.novabank.features.customer.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class CustomerResponse {
@@ -12,7 +13,7 @@ public class CustomerResponse {
     private String phone;
     private String documentNumber;
     private String documentType;
-    private LocalDateTime birthDate;
+    private LocalDate birthDate;
     private String address;
     private boolean isActive;
     private LocalDateTime createdAt;
@@ -82,11 +83,11 @@ public class CustomerResponse {
         this.documentType = documentType;
     }
 
-    public LocalDateTime getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDateTime birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
