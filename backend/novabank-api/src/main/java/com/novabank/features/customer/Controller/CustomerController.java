@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.novabank.features.customer.dto.CustomerRequest;
@@ -80,6 +81,18 @@ public class CustomerController {
         public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
 
                 List<Customer> customers = customerService.getAllCustomers();
+                List<CustomerResponse> responses = customers.stream()
+                                .map(customerMapper::toResponse)
+                                .toList();
+
+                return ResponseEntity.ok(responses);
+        }
+
+        @GetMapping("/search")
+        public ResponseEntity<List<CustomerResponse>> searchCustomersByName(
+                        @RequestParam String name) {
+
+                List<Customer> customers = customerService.searchCustomersByName(name);
                 List<CustomerResponse> responses = customers.stream()
                                 .map(customerMapper::toResponse)
                                 .toList();
