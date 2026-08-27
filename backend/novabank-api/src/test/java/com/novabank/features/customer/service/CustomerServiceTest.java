@@ -197,4 +197,19 @@ public class CustomerServiceTest {
                 assertThat(result.getDocumentNumber()).isEqualTo(documentNumber);
         }
 
+        @Test
+        void getCustomerByDocumentNumber_WhenNotFound_ShouldThrowResourceNotFoundException() {
+
+                String documentNumber = "ABCD123EF";
+
+                when(customerRepository
+                                .findByDocumentNumber(documentNumber))
+                                .thenReturn(Optional.empty());
+
+                assertThatThrownBy(() -> customerService
+                                .getCustomerByDocumentNumber(documentNumber))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessage("Document number not found: ABCD123EF");
+        }
+
 }
