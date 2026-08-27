@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -210,6 +211,24 @@ public class CustomerServiceTest {
                                 .getCustomerByDocumentNumber(documentNumber))
                                 .isInstanceOf(ResourceNotFoundException.class)
                                 .hasMessage("Document number not found: ABCD123EF");
+        }
+
+        @Test
+        void searchCustomersByName_ShouldReturnMatchingCustomers() {
+
+                String customerName = "john";
+
+                List<Customer> customers = List.of(new Customer(), new Customer());
+
+                when(customerRepository
+                                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                                customerName, customerName))
+                                .thenReturn(customers);
+
+                List<Customer> result = customerService
+                                .searchCustomersByName(customerName);
+
+                assertThat(result).hasSize(2);
         }
 
 }
