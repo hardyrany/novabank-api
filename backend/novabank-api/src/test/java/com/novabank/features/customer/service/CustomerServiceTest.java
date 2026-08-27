@@ -355,4 +355,22 @@ public class CustomerServiceTest {
                                 .isInstanceOf(ResourceNotFoundException.class)
                                 .hasMessage("Customer not found with id: 999");
         }
+
+        @Test
+        void activateCustomer_ShouldActivateCustomer() {
+
+                Long customerId = 1L;
+                Customer customer = new Customer();
+
+                customer.setId(customerId);
+                customer.setActive(false);
+
+                when(customerRepository.findById(customerId))
+                                .thenReturn(Optional.of(customer));
+
+                customerService.activateCustomer(customerId);
+
+                assertThat(customer.isActive()).isTrue();
+                verify(customerRepository).save(customer);
+        }
 }
