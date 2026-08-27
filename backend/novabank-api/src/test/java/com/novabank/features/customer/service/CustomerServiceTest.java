@@ -309,4 +309,18 @@ public class CustomerServiceTest {
                                 .isEqualTo("New Name");
                 verify(customerRepository).save(existingCustomer);
         }
+
+        @Test
+        void updateCustomer_WhenNotFound_ShouldThrowResourceNotFound() {
+
+                Long customerId = 999L;
+
+                when(customerRepository.findById(customerId))
+                                .thenReturn(Optional.empty());
+
+                assertThatThrownBy(() -> customerService.updateCustomer(
+                                customerId, new Customer()))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessage("Customer not found with id: 999");
+        }
 }
