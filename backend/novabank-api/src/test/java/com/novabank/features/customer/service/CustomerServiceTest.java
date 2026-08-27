@@ -15,6 +15,7 @@ import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class CustomerServiceTest {
@@ -116,5 +117,22 @@ public class CustomerServiceTest {
                 // Assert
                 assertThat(result).isNotNull();
                 assertThat(result.getId()).isEqualTo(customerId);
+        }
+
+        @Test
+        void getCustomerById_WhenNoFound_ShouldReturnResourceNotFoundException() {
+
+                // Arrange
+                Long customerId = 999L;
+
+                when(customerRepository
+                                .findById(customerId))
+                                .thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> customerService
+                                .getCustomerById(customerId))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessage("Customer not found with id: 999");
         }
 }
