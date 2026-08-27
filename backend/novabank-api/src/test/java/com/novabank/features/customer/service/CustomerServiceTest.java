@@ -55,7 +55,7 @@ public class CustomerServiceTest {
         }
 
         @Test
-        void createCustomer_WithDucplicateEmail_ShouldThrowBusinessException() {
+        void createCustomer_WithDuplicateEmail_ShouldThrowBusinessException() {
 
                 // Arrange
                 Customer customer = new Customer();
@@ -120,7 +120,7 @@ public class CustomerServiceTest {
         }
 
         @Test
-        void getCustomerById_WhenNoFound_ShouldReturnResourceNotFoundException() {
+        void getCustomerById_WhenNoFound_ShouldThrowResourceNotFoundException() {
 
                 // Arrange
                 Long customerId = 999L;
@@ -158,4 +158,24 @@ public class CustomerServiceTest {
                 assertThat(result.getEmail()).isEqualTo(customerEmail);
 
         }
+
+        @Test
+        void getCustomerByEmail_WhenNotFound_ShouldThrowResourceNotFoundException() {
+
+                // Arrange
+                String customerEmail = "notfound@example.com";
+
+                when(customerRepository
+                                .findByEmail(customerEmail))
+                                .thenReturn(Optional.empty());
+
+                // Act & Assert
+
+                assertThatThrownBy(() -> customerService
+                                .getCustomerByEmail(customerEmail))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessage("Email not found: notfound@example.com");
+
+        }
+
 }
