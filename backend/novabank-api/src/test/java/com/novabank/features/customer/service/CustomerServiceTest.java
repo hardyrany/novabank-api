@@ -135,4 +135,27 @@ public class CustomerServiceTest {
                                 .isInstanceOf(ResourceNotFoundException.class)
                                 .hasMessage("Customer not found with id: 999");
         }
+
+        @Test
+        void getCustomerByEmail_ShouldReturnCustomer() {
+
+                // Arrange
+                String customerEmail = "john@example.com";
+                Customer customer = new Customer();
+
+                customer.setEmail(customerEmail);
+
+                when(customerRepository
+                                .findByEmail(customerEmail))
+                                .thenReturn(Optional.of(customer));
+
+                // Act
+                Customer result = customerService
+                                .getCustomerByEmail(customerEmail);
+
+                // Assert
+                assertThat(result).isNotNull();
+                assertThat(result.getEmail()).isEqualTo(customerEmail);
+
+        }
 }
