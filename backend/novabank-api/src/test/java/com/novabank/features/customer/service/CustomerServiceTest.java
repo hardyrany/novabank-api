@@ -323,4 +323,22 @@ public class CustomerServiceTest {
                                 .isInstanceOf(ResourceNotFoundException.class)
                                 .hasMessage("Customer not found with id: 999");
         }
+
+        @Test
+        void deleteCustomer_ShouldSoftDeleteCustomer() {
+
+                Long customerId = 1L;
+                Customer customer = new Customer();
+
+                customer.setId(customerId);
+                customer.setActive(true);
+
+                when(customerRepository.findById(customerId))
+                                .thenReturn(Optional.of(customer));
+
+                customerService.deleteCustomer(customerId);
+
+                assertThat(customer.isActive()).isFalse();
+                verify(customerRepository).save(customer);
+        }
 }
