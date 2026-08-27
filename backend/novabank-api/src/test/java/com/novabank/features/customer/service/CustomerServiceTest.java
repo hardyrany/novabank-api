@@ -247,6 +247,23 @@ public class CustomerServiceTest {
                 verify(customerRepository, never())
                                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
                                                 any(), any());
+        }
 
+        @Test
+        void searchCustomersByName_WhenNameIsNull_ShouldReturnAllCustomers() {
+
+                List<Customer> customers = List.of(new Customer(), new Customer(), new Customer());
+
+                when(customerRepository
+                                .findAll())
+                                .thenReturn(customers);
+
+                List<Customer> result = customerService
+                                .searchCustomersByName(null);
+
+                assertThat(result).hasSize(3);
+                verify(customerRepository, never())
+                                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                                any(), any());
         }
 }
