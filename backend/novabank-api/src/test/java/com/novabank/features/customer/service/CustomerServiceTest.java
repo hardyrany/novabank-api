@@ -178,4 +178,23 @@ public class CustomerServiceTest {
 
         }
 
+        @Test
+        void getCustomerByDocumentNumber_ShouldReturnCustomer() {
+
+                String documentNumber = "ABCD123EF";
+                Customer customer = new Customer();
+
+                customer.setDocumentNumber(documentNumber);
+
+                when(customerRepository
+                                .findByDocumentNumber(documentNumber))
+                                .thenReturn(Optional.of(customer));
+
+                Customer result = customerService
+                                .getCustomerByDocumentNumber(documentNumber);
+
+                assertThat(result).isNotNull();
+                assertThat(result.getDocumentNumber()).isEqualTo(documentNumber);
+        }
+
 }
