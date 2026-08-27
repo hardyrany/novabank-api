@@ -231,4 +231,22 @@ public class CustomerServiceTest {
                 assertThat(result).hasSize(2);
         }
 
+        @Test
+        void searchCustomersByName_WhenNameIsEmpty_ShouldReturnAllCustomers() {
+
+                List<Customer> customers = List.of(new Customer(), new Customer(), new Customer());
+
+                when(customerRepository
+                                .findAll())
+                                .thenReturn(customers);
+
+                List<Customer> result = customerService
+                                .searchCustomersByName("");
+
+                assertThat(result).hasSize(3);
+                verify(customerRepository, never())
+                                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                                                any(), any());
+
+        }
 }
