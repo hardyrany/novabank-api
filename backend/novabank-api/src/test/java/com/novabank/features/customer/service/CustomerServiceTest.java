@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.repository.CustomerRepository;
-import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
@@ -282,5 +281,32 @@ public class CustomerServiceTest {
                 assertThat(result).hasSize(1);
                 verify(customerRepository)
                                 .findAll();
+        }
+
+        @Test
+        void updateCustomer_ShouldUpdateAndReturnCustomer() {
+
+                Long customerId = 1L;
+                Customer existingCustomer = new Customer();
+
+                existingCustomer.setId(customerId);
+                existingCustomer.setFirstName("Old Name");
+
+                Customer customerDetails = new Customer();
+
+                customerDetails.setFirstName("New Name");
+
+                when(customerRepository.findById(customerId))
+                                .thenReturn(Optional.of(existingCustomer));
+                when(customerRepository.save(any(Customer.class)))
+                                .thenReturn(existingCustomer);
+
+                Customer result = customerService.updateCustomer(
+                                customerId, customerDetails);
+
+                assertThat(result).isNotNull();
+                assertThat(result.getFirstName())
+                                .isEqualTo("New Name");
+                verify(customerRepository).save(existingCustomer);
         }
 }
