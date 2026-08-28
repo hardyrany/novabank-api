@@ -19,3 +19,10 @@ CREATE TABLE IF NOT EXISTS accounts.accounts (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_account_customer FOREIGN KEY (customer_id) REFERENCES customers.customers (id)
 );
+
+-- 3. Índices para performance
+CREATE INDEX idx_accounts_customer_id ON accounts.accounts (customer_id);
+
+CREATE INDEX idx_accounts_accounts_number ON accounts.accounts (account_number);
+
+CREATE INDEX idx_accounts_is_active ON accounts.accounts (is_active);
