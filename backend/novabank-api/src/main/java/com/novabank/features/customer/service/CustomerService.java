@@ -25,19 +25,18 @@ public class CustomerService {
             throw new BusinessException("Email already exists: " + customer.getEmail());
         }
 
-        if (customer.getDocumentNumber() != null &&
-                customerRepository.existsByDocumentNumber(customer.getDocumentNumber())) {
-            throw new BusinessException("Document number already exists: "
-                    + customer.getDocumentNumber());
+        if (customer.getDocumentNumber() != null
+                && customerRepository.existsByDocumentNumber(customer.getDocumentNumber())) {
+            throw new BusinessException(
+                    "Document number already exists: " + customer.getDocumentNumber());
         }
 
         return customerRepository.save(customer);
     }
 
     public Customer getCustomerById(Long id) {
-        return customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Customer not found with id: " + id));
+        return customerRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Customer not found with id: " + id));
     }
 
     public List<Customer> searchCustomersByName(String name) {
@@ -46,14 +45,12 @@ public class CustomerService {
         }
 
         return customerRepository
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                        name, name);
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
     }
 
     public Customer getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Email not found: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Email not found: " + email));
     }
 
     public Customer getCustomerByDocumentNumber(String documentNumber) {
