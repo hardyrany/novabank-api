@@ -1,0 +1,31 @@
+spring:
+    application:
+        name: novabank-api
+
+    profiles:
+        active: test
+
+    jpa:
+        open-in-view: false
+        properties:
+            hibernate:
+                jdbc:
+                    batch_size: 20
+                order_inserts: true
+                order_updates: true
+
+    jackson:
+        deserialization:
+            fail-on-unknown-properties: false
+
+server:
+    port: 8080
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
+    endpoint:
+        health:
+            show-details: always
