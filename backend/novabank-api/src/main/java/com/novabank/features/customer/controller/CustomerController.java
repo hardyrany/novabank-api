@@ -1,4 +1,4 @@
-package com.novabank.features.customer.Controller;
+package com.novabank.features.customer.controller;
 
 import java.util.List;
 
