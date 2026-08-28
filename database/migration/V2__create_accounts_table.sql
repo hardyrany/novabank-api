@@ -26,3 +26,25 @@ CREATE INDEX idx_accounts_customer_id ON accounts.accounts (customer_id);
 CREATE INDEX idx_accounts_accounts_number ON accounts.accounts (account_number);
 
 CREATE INDEX idx_accounts_is_active ON accounts.accounts (is_active);
+
+-- 4. Comentários para documentação
+COMMENT ON
+TABLE accounts.accounts IS 'Stores customer bank accounts';
+
+COMMENT ON COLUMN accounts.accounts.id IS 'Unique identifier for the account';
+
+COMMENT ON COLUMN accounts.accounts.customer_id IS 'Reference to the customer owning the account';
+
+COMMENT ON COLUMN accounts.accounts.account_number IS 'Unique account number';
+
+COMMENT ON COLUMN accounts.accounts.account_type IS 'Type of account: CHECKING or SAVINGS';
+
+COMMENT ON COLUMN accounts.accounts.balance IS 'Current account balance';
+
+COMMENT ON COLUMN accounts.accounts.currency IS 'Currency code (ISO 4217)';
+
+COMMENT ON COLUMN accounts.accounts.is_active IS 'Soft delete flag';
+
+COMMENT ON COLUMN accounts.accounts.created_at IS 'Timestamp of record creation';
+
+COMMENT ON COLUMN accounts.accounts.updated_at IS 'Timestamp of last update';
