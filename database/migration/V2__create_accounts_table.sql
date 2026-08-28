@@ -16,5 +16,6 @@ CREATE TABLE IF NOT EXISTS accounts.accounts (
     currency VARCHAR(3) DEFAULT 'USD',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_account_customer FOREIGN KEY (customer_id) REFERENCES customers.customers (id)
 );
