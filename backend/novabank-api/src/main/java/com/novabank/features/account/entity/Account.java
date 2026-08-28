@@ -1,5 +1,6 @@
 package com.novabank.features.account.entity;
 
+import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,4 +24,10 @@ public class Account {
 
     @Column(name = "account_type", nullable = false, length = 20)
     private String accountType;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @Column(length = 3)
+    private String currency = "USD";
 }
