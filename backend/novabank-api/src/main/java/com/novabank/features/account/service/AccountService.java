@@ -5,6 +5,7 @@ import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
+import java.security.SecureRandom;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,8 +39,10 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private String generateAccountNumber() {
-        return System.currentTimeMillis() + String.format("%04d", (int) (Math.random() * 10000));
+        return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
 
 }
