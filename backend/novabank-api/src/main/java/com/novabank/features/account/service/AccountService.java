@@ -5,8 +5,10 @@ import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
 import java.security.SecureRandom;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountService {
@@ -14,6 +16,7 @@ public class AccountService {
     private final CustomerService customerService;
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public AccountService(AccountRepository accountRepository,
             CustomerRepository customerRepository, CustomerService customerService) {
@@ -39,7 +42,12 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    private static final SecureRandom RANDOM = new SecureRandom();
+    @Transactional(readOnly = true)
+    public Account getAccountById(Long id) {
+
+        return accountRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Account not found with id: " + id));
+    }
 
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
