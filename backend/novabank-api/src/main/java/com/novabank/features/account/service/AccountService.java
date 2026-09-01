@@ -7,6 +7,7 @@ import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 import java.security.SecureRandom;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,13 @@ public class AccountService {
         return accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Account not found with number: " + accountNumber));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Account> getAccountsByCustomerId(Long customerId) {
+        customerService.getCustomerById(customerId);
+
+        return accountRepository.findByCustomerId(customerId);
     }
 
     private String generateAccountNumber() {
