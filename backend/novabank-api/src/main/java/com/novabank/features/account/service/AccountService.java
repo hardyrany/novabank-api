@@ -71,6 +71,20 @@ public class AccountService {
         return accountRepository.findByActive(true);
     }
 
+    public Account updateAccount(Long id, Account accountDetails) {
+
+        Account existingAccount = getAccountById(id);
+
+        if (accountDetails.getAccountType() != null) {
+            existingAccount.setAccountType(accountDetails.getAccountType());
+        }
+        if (accountDetails.getCurrency() != null) {
+            existingAccount.setCurrency(accountDetails.getCurrency());
+        }
+
+        return accountRepository.save(existingAccount);
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
