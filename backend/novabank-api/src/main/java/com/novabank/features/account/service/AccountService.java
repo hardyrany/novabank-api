@@ -49,6 +49,14 @@ public class AccountService {
                 () -> new ResourceNotFoundException("Account not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Account getAccountByAccountNumber(String accountNumber) {
+
+        return accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Account not found with number: " + accountNumber));
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
