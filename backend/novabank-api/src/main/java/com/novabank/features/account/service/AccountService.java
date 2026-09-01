@@ -85,6 +85,22 @@ public class AccountService {
         return accountRepository.save(existingAccount);
     }
 
+    public void deactivateAccount(Long id) {
+        
+        Account account = getAccountById(id);
+
+        account.setActive(false);
+        accountRepository.save(account);
+    }
+
+    public void activateAccount(Long id) {
+        
+        Account account = getAccountById(id);
+
+        account.setActive(true);
+        accountRepository.save(account);
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
