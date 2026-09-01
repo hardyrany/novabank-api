@@ -65,6 +65,12 @@ public class AccountService {
         return accountRepository.findByCustomerId(customerId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Account> getActiveAccounts() {
+
+        return accountRepository.findByActive(true);
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
