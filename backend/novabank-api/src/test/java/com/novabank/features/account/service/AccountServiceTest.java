@@ -70,4 +70,18 @@ public class AccountServiceTest {
         verify(accountRepository).save(any(Account.class));
     }
 
+    @Test
+    void createAccount_ShouldThrowBusinessException_WhenAccountNumberAlreadyExists() {
+        // Arrange
+        when(customerService.getCustomerById(1L)).thenReturn(null);
+        when(accountRepository.findByAccountNumber("ACC-1234567890"))
+                .thenReturn(Optional.of(account));
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> accountService.createAccount(account));
+
+        verify(customerService).getCustomerById(1L);
+        verify(accountRepository).findByAccountNumber("ACC-1234567890");
+        verify(accountRepository, never()).save(any(Account.class));
+    }
 }
