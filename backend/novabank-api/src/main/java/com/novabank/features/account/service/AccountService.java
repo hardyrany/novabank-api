@@ -7,6 +7,7 @@ import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -117,6 +118,10 @@ public class AccountService {
         long activeCount = accounts.stream().filter(Account::isActive).count();
         accountSummary.setActiveAccounts((int) activeCount);
         accountSummary.setInactiveAccounts(accounts.size() - (int) activeCount);
+
+        BigDecimal totalBalance =
+                accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+        accountSummary.setTotalBalance(totalBalance);
 
         return accountSummary;
     }
