@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.novabank.features.account.dto.AccountRequest;
 import com.novabank.features.account.dto.AccountResponse;
+import com.novabank.features.account.dto.CustomerAccountSummary;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.mapper.AccountMapper;
 import com.novabank.features.account.service.AccountService;
@@ -94,6 +95,14 @@ public class AccountController {
         Account account = accountService.getAccountById(id);
 
         return ResponseEntity.ok(account.getBalance());
+    }
+
+    @GetMapping("/customer/{customerId}/account-summary")
+    public ResponseEntity<CustomerAccountSummary> getCustomerAccountSummary(@PathVariable Long customerId) {
+
+        CustomerAccountSummary accountSummary = accountService.getCustomerSummary(customerId);
+
+        return ResponseEntity.ok(accountSummary);
     }
 
     @PutMapping("/{id}")
