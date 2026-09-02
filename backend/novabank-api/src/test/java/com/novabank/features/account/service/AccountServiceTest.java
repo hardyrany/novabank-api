@@ -84,4 +84,18 @@ public class AccountServiceTest {
         verify(accountRepository).findByAccountNumber("ACC-1234567890");
         verify(accountRepository, never()).save(any(Account.class));
     }
+
+    @Test
+    void createAccount_ShouldThrowResourceNotFoundException_WhenCustomerNotFound() {
+        // Arrange
+        when(customerService.getCustomerById(1L))
+                .thenThrow(new ResourceNotFoundException("Customer not found with id: 1"));
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> accountService.createAccount(account));
+
+        verify(customerService).getCustomerById(1L);
+        verify(accountRepository, never()).findByAccountNumber(anyString());
+        verify(accountRepository, never()).save(any(Account.class));
+    }
 }
