@@ -159,4 +159,20 @@ public class AccountServiceTest {
 
         verify(accountRepository).findByAccountNumber("INVALID-123");
     }
+
+    @Test
+    void getAccountsByCustomerId_ShouldThrowResourceNotFoundException_WhenCustomerNotFound() {
+        // Arrange
+        when(customerService.getCustomerById(99L))
+                .thenThrow(new ResourceNotFoundException("Customer not found with id: 99"));
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> accountService.getAccountsByCustomerId(99L));
+
+        assertEquals("Customer not found with id: 99", exception.getMessage());
+
+        verify(customerService).getCustomerById(99L);
+        verify(accountRepository, never()).findByCustomerId(99L);
+    }
 }
