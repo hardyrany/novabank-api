@@ -128,4 +128,21 @@ public class AccountServiceTest {
 
         verify(accountRepository).findById(99L);
     }
+
+    @Test
+    void getAccountByAccountNumber_ShouldReturnAccount_WhenFound() {
+        // Arrange
+        when(accountRepository.findByAccountNumber("ACC-1234567890"))
+                .thenReturn(Optional.of(account));
+
+        // Act
+        Account result = accountService.getAccountByAccountNumber("ACC-1234567890");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(account.getAccountNumber(), result.getAccountNumber());
+        assertEquals(account.getAccountType(), result.getAccountType());
+
+        verify(accountRepository).findByAccountNumber("ACC-1234567890");
+    }
 }
