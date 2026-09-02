@@ -224,4 +224,23 @@ public class AccountServiceTest {
         verify(accountRepository).findById(1L);
         verify(accountRepository).save(existingAccount);
     }
+
+    @Test
+    void updateAccount_ShouldThrowResourceNotFoundException_WhenAccountNotFound() {
+        // Arrange
+        Account updatedDetails = new Account();
+        updatedDetails.setAccountType("SAVINGS");
+        updatedDetails.setCurrency("EUR");
+
+        when(accountRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> accountService.updateAccount(99L, updatedDetails));
+
+        assertEquals("Account not found with id: 99", exception.getMessage());
+
+        verify(accountRepository).findById(99L);
+        verify(accountRepository, never()).save(any(Account.class));
+    }
 }
