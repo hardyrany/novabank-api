@@ -16,6 +16,10 @@ public class AccountResponse {
     private LocalDateTime updatedAt;
 
 
+    public AccountResponse () {
+
+    }
+    
     public AccountResponse(Long id, Long customerId, String accountNumber, String accountType,
             BigDecimal balance, String currency, boolean active, LocalDateTime createdAt,
             LocalDateTime updatedAt) {
