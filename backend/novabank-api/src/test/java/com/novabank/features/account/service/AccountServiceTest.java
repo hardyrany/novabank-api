@@ -1,6 +1,7 @@
 package com.novabank.features.account.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -46,6 +47,27 @@ public class AccountServiceTest {
         account.setBalance(java.math.BigDecimal.ZERO);
         account.setCurrency("USD");
         account.setActive(true);
+    }
+
+    @Test
+    void createAccount_ShouldReturnSavedAccount_WhenSuccessful() {
+        // Arrange
+        when(customerService.getCustomerById(1L)).thenReturn(null); // Cliente existe
+        when(accountRepository.findByAccountNumber("ACC-1234567890")).thenReturn(Optional.empty());
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        Account result = accountService.createAccount(account);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(account.getId(), result.getId());
+        assertEquals(account.getAccountNumber(), result.getAccountNumber());
+        assertEquals(account.getAccountType(), result.getAccountType());
+
+        verify(customerService).getCustomerById(1L);
+        verify(accountRepository).findByAccountNumber("ACC-1234567890");
+        verify(accountRepository).save(any(Account.class));
     }
 
 }
