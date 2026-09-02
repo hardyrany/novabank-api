@@ -1,5 +1,6 @@
 package com.novabank.features.account.service;
 
+import com.novabank.features.account.dto.CustomerAccountSummary;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
@@ -99,6 +100,19 @@ public class AccountService {
 
         account.setActive(true);
         accountRepository.save(account);
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerAccountSummary getCustomerSummary(Long customerId) {
+
+        customerService.getCustomerById(customerId);
+
+        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+
+        CustomerAccountSummary accountSummary = new CustomerAccountSummary();
+        accountSummary.setCustomerId(customerId);
+
+        return accountSummary;
     }
 
     private String generateAccountNumber() {
