@@ -68,7 +68,7 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<Account> getActiveAccounts() {
 
-        return accountRepository.findByActive(true);
+        return accountRepository.findByIsActive(true);
     }
 
     public Account updateAccount(Long id, Account accountDetails) {

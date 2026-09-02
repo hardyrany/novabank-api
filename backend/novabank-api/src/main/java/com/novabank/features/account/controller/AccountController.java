@@ -68,7 +68,22 @@ public class AccountController {
         List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
 
         List<AccountResponse> accountResponses =
-                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
+                accounts.stream()
+                .map(accountMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(accountResponses);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<AccountResponse>> getActiveAccounts() {
+
+        List<Account> accounts = accountService.getActiveAccounts();
+
+        List<AccountResponse> accountResponses =
+                accounts.stream()
+                .map(accountMapper::toResponse)
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(accountResponses);
     }
