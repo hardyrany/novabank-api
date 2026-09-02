@@ -145,4 +145,18 @@ public class AccountServiceTest {
 
         verify(accountRepository).findByAccountNumber("ACC-1234567890");
     }
+
+    @Test
+    void getAccountByAccountNumber_ShouldThrowResourceNotFoundException_WhenNotFound() {
+        // Arrange
+        when(accountRepository.findByAccountNumber("INVALID-123")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> accountService.getAccountByAccountNumber("INVALID-123"));
+
+        assertEquals("Account not found with number: INVALID-123", exception.getMessage());
+
+        verify(accountRepository).findByAccountNumber("INVALID-123");
+    }
 }
