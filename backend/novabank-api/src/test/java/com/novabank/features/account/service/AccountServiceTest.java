@@ -258,4 +258,19 @@ public class AccountServiceTest {
         verify(accountRepository).findById(1L);
         verify(accountRepository).save(account);
     }
+
+    @Test
+    void deactivateAccount_ShouldThrowResourceNotFoundException_WhenAccountNotFound() {
+        // Arrange
+        when(accountRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> accountService.deactivateAccount(99L));
+
+        assertEquals("Account not found with id: 99", exception.getMessage());
+
+        verify(accountRepository).findById(99L);
+        verify(accountRepository, never()).save(any(Account.class));
+    }
 }
