@@ -273,4 +273,20 @@ public class AccountServiceTest {
         verify(accountRepository).findById(99L);
         verify(accountRepository, never()).save(any(Account.class));
     }
+
+    @Test
+    void activateAccount_ShouldSetActiveToTrue_WhenSuccessful() {
+        // Arrange
+        account.setActive(false); // Conta está desativada
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        accountService.activateAccount(1L);
+
+        // Assert
+        assertTrue(account.isActive()); // Verifica se a conta foi reativada
+        verify(accountRepository).findById(1L);
+        verify(accountRepository).save(account);
+    }
 }
