@@ -26,8 +26,8 @@ public class CustomerAccountSummary {
         this.totalAccounts = totalAccounts;
         this.activeAccounts = activateAccounts;
         this.inactiveAccounts = inactiveAccounts;
-        this.balanceByCurrency = balanceByCurrency;
-        this.accountTypes = accountTypes;
+    this.balanceByCurrency = balanceByCurrency != null ? Map.copyOf(balanceByCurrency) : Map.of();
+    this.accountTypes = accountTypes != null ? Map.copyOf(accountTypes) : Map.of();
 
     }
 
@@ -73,19 +73,20 @@ public class CustomerAccountSummary {
     }
 
     public Map<String, BigDecimal> getBalanceByCurrency() {
-        return balanceByCurrency;
+        return balanceByCurrency != null ? Map.copyOf(balanceByCurrency) : Map.of();
     }
 
     public void setBalanceByCurrency(Map<String, BigDecimal> balanceByCurrency) {
-        this.balanceByCurrency = balanceByCurrency;
+        this.balanceByCurrency =
+                balanceByCurrency != null ? Map.copyOf(balanceByCurrency) : Map.of();
     }
 
     public Map<String, Integer> getAccountTypes() {
-        return accountTypes;
+        return accountTypes != null ? Map.copyOf(accountTypes) : Map.of();
     }
 
     public void setAccountTypes(Map<String, Integer> accountTypes) {
-        this.accountTypes = accountTypes;
+        this.accountTypes = accountTypes != null ? Map.copyOf(accountTypes) : Map.of();
     }
 
 }
