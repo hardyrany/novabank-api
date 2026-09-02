@@ -114,4 +114,18 @@ public class AccountServiceTest {
 
         verify(accountRepository).findById(1L);
     }
+
+    @Test
+    void getAccountById_ShouldThrowResourceNotFoundException_WhenNotFound() {
+        // Arrange
+        when(accountRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> accountService.getAccountById(99L));
+
+        assertEquals("Account not found with id: 99", exception.getMessage());
+
+        verify(accountRepository).findById(99L);
+    }
 }
