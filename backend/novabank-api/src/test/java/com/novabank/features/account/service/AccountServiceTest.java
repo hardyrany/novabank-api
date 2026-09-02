@@ -191,4 +191,37 @@ public class AccountServiceTest {
 
         verify(accountRepository).findByIsActive(true);
     }
+
+    @Test
+    void updateAccount_ShouldUpdateAndReturnAccount_WhenSuccessful() {
+        // Arrange
+        Account existingAccount = new Account();
+        existingAccount.setId(1L);
+        existingAccount.setCustomerId(1L);
+        existingAccount.setAccountNumber("ACC-1234567890");
+        existingAccount.setAccountType("CHECKING");
+        existingAccount.setCurrency("USD");
+        existingAccount.setBalance(java.math.BigDecimal.valueOf(1000.00));
+
+        Account updatedDetails = new Account();
+        updatedDetails.setAccountType("SAVINGS");
+        updatedDetails.setCurrency("EUR");
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(existingAccount));
+        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
+
+        // Act
+        Account result = accountService.updateAccount(1L, updatedDetails);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("SAVINGS", result.getAccountType());
+        assertEquals("EUR", result.getCurrency());
+        // Verifica que outros campos permanecem inalterados
+        assertEquals(1L, result.getCustomerId());
+        assertEquals("ACC-1234567890", result.getAccountNumber());
+
+        verify(accountRepository).findById(1L);
+        verify(accountRepository).save(existingAccount);
+    }
 }
