@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,9 +69,7 @@ public class AccountController {
         List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
 
         List<AccountResponse> accountResponses =
-                accounts.stream()
-                .map(accountMapper::toResponse)
-                .collect(Collectors.toList());
+                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
 
         return ResponseEntity.ok(accountResponses);
     }
@@ -81,10 +80,20 @@ public class AccountController {
         List<Account> accounts = accountService.getActiveAccounts();
 
         List<AccountResponse> accountResponses =
-                accounts.stream()
-                .map(accountMapper::toResponse)
-                .collect(Collectors.toList());
+                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
 
         return ResponseEntity.ok(accountResponses);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id,
+            @RequestBody AccountRequest accountRequest) {
+
+        Account account = accountMapper.toEntity(accountRequest);
+        Account updatedAccount = accountService.updateAccount(id, account);
+        AccountResponse accountResponse = accountMapper.toResponse(updatedAccount);
+
+        return ResponseEntity.ok(accountResponse);
+    }
+
 }
