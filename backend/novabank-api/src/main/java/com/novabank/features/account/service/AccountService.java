@@ -10,6 +10,8 @@ import com.novabank.infra.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,6 +124,10 @@ public class AccountService {
         BigDecimal totalBalance =
                 accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
         accountSummary.setTotalBalance(totalBalance);
+
+        Map<String, BigDecimal> balanceByCurrency = accounts.stream().collect(Collectors.groupingBy(
+                Account::getCurrency,
+                Collectors.reducing(BigDecimal.ZERO, Account::getBalance, BigDecimal::add)));
 
         return accountSummary;
     }
