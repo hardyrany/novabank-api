@@ -129,6 +129,12 @@ public class AccountService {
                 Account::getCurrency,
                 Collectors.reducing(BigDecimal.ZERO, Account::getBalance, BigDecimal::add)));
 
+        Map<String, Integer> accountByType =
+                accounts.stream().collect(Collectors.groupingBy(Account::getAccountType,
+                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)));
+
+        accountSummary.setAccountTypes(accountByType);
+
         return accountSummary;
     }
 
