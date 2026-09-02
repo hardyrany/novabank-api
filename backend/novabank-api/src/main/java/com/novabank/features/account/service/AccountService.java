@@ -87,7 +87,7 @@ public class AccountService {
     }
 
     public void deactivateAccount(Long id) {
-        
+
         Account account = getAccountById(id);
 
         account.setActive(false);
@@ -95,7 +95,7 @@ public class AccountService {
     }
 
     public void activateAccount(Long id) {
-        
+
         Account account = getAccountById(id);
 
         account.setActive(true);
@@ -111,6 +111,12 @@ public class AccountService {
 
         CustomerAccountSummary accountSummary = new CustomerAccountSummary();
         accountSummary.setCustomerId(customerId);
+
+        accountSummary.setTotalAccounts(accounts.size());
+
+        long activeCount = accounts.stream().filter(Account::isActive).count();
+        accountSummary.setActiveAccounts((int) activeCount);
+        accountSummary.setInactiveAccounts(accounts.size() - (int) activeCount);
 
         return accountSummary;
     }

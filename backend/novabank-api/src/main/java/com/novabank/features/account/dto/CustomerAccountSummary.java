@@ -8,8 +8,8 @@ public class CustomerAccountSummary {
     private Long customerId;
     private BigDecimal totalBalance;
     private int totalAccounts;
-    private int activeAccount;
-    private int inactiveAccount;
+    private int activeAccounts;
+    private int inactiveAccounts;
     private Map<String, BigDecimal> balanceByCurrency;
     private Map<String, Integer> accountTypes;
 
@@ -18,14 +18,14 @@ public class CustomerAccountSummary {
     }
 
     public CustomerAccountSummary(Long customerId, BigDecimal totalBalance, int totalAccounts,
-            int activateAccount, int inactiveAccount, Map<String, BigDecimal> balanceByCurrency,
+            int activateAccounts, int inactiveAccounts, Map<String, BigDecimal> balanceByCurrency,
             Map<String, Integer> accountTypes) {
 
         this.customerId = customerId;
         this.totalBalance = totalBalance;
         this.totalAccounts = totalAccounts;
-        this.activeAccount = activateAccount;
-        this.inactiveAccount = inactiveAccount;
+        this.activeAccounts = activateAccounts;
+        this.inactiveAccounts = inactiveAccounts;
         this.balanceByCurrency = balanceByCurrency;
         this.accountTypes = accountTypes;
 
@@ -56,20 +56,20 @@ public class CustomerAccountSummary {
         this.totalAccounts = totalAccounts;
     }
 
-    public int getActiveAccount() {
-        return activeAccount;
+    public int getActiveAccounts() {
+        return activeAccounts;
     }
 
-    public void setActiveAccount(int activeAccount) {
-        this.activeAccount = activeAccount;
+    public void setActiveAccounts(int activeAccounts) {
+        this.activeAccounts = activeAccounts;
     }
 
-    public int getInactiveAccount() {
-        return inactiveAccount;
+    public int getInactiveAccounts() {
+        return inactiveAccounts;
     }
 
-    public void setInactiveAccount(int inactiveAccount) {
-        this.inactiveAccount = inactiveAccount;
+    public void setInactiveAccounts(int inactiveAccounts) {
+        this.inactiveAccounts = inactiveAccounts;
     }
 
     public Map<String, BigDecimal> getBalanceByCurrency() {
