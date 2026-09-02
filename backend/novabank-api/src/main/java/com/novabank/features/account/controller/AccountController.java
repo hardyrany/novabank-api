@@ -1,5 +1,6 @@
 package com.novabank.features.account.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -85,6 +86,14 @@ public class AccountController {
                 accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
 
         return ResponseEntity.ok(accountResponses);
+    }
+
+    @GetMapping("/{id}/balance")
+    public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long id) {
+
+        Account account = accountService.getAccountById(id);
+
+        return ResponseEntity.ok(account.getBalance());
     }
 
     @PutMapping("/{id}")
