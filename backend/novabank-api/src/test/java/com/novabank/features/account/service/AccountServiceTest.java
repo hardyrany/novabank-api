@@ -3,7 +3,7 @@ package com.novabank.features.account.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -174,5 +174,21 @@ public class AccountServiceTest {
 
         verify(customerService).getCustomerById(99L);
         verify(accountRepository, never()).findByCustomerId(99L);
+    }
+
+    @Test
+    void getActiveAccounts_ShouldReturnOnlyActiveAccounts_WhenCalled() {
+        // Arrange
+        when(accountRepository.findByIsActive(true)).thenReturn(List.of(account));
+
+        // Act
+        List<Account> result = accountService.getActiveAccounts();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).isActive());
+
+        verify(accountRepository).findByIsActive(true);
     }
 }
