@@ -99,7 +99,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<AccountResponse> deactivateAccount(@PathVariable Long id) {
+    public ResponseEntity<Void> deactivateAccount(@PathVariable Long id) {
 
         accountService.deactivateAccount(id);
 
