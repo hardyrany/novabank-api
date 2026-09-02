@@ -1,5 +1,7 @@
 package com.novabank.features.account.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,4 +61,15 @@ public class AccountController {
         return ResponseEntity.ok(accountResponse);
     }
 
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(
+            @PathVariable Long customerId) {
+
+        List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
+
+        List<AccountResponse> accountResponses =
+                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
+
+        return ResponseEntity.ok(accountResponses);
+    }
 }
