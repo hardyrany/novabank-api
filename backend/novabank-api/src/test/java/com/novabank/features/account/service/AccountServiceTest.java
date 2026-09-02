@@ -243,4 +243,19 @@ public class AccountServiceTest {
         verify(accountRepository).findById(99L);
         verify(accountRepository, never()).save(any(Account.class));
     }
+
+    @Test
+    void deactivateAccount_ShouldSetActiveToFalse_WhenSuccessful() {
+        // Arrange
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        accountService.deactivateAccount(1L);
+
+        // Assert
+        assertFalse(account.isActive()); // Verifica se a conta foi desativada
+        verify(accountRepository).findById(1L);
+        verify(accountRepository).save(account);
+    }
 }
