@@ -1,13 +1,17 @@
 package com.novabank.features.account.service;
 
+import com.novabank.features.account.dto.CustomerAccountSummary;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,7 +90,7 @@ public class AccountService {
     }
 
     public void deactivateAccount(Long id) {
-        
+
         Account account = getAccountById(id);
 
         account.setActive(false);
@@ -94,11 +98,46 @@ public class AccountService {
     }
 
     public void activateAccount(Long id) {
-        
+
         Account account = getAccountById(id);
 
         account.setActive(true);
         accountRepository.save(account);
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerAccountSummary getCustomerSummary(Long customerId) {
+
+        customerService.getCustomerById(customerId);
+
+        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+
+        CustomerAccountSummary accountSummary = new CustomerAccountSummary();
+        accountSummary.setCustomerId(customerId);
+
+        accountSummary.setTotalAccounts(accounts.size());
+
+        long activeCount = accounts.stream().filter(Account::isActive).count();
+        accountSummary.setActiveAccounts((int) activeCount);
+        accountSummary.setInactiveAccounts(accounts.size() - (int) activeCount);
+
+        BigDecimal totalBalance =
+                accounts.stream().map(Account::getBalance).reduce(BigDecimal.ZERO, BigDecimal::add);
+        accountSummary.setTotalBalance(totalBalance);
+
+        Map<String, BigDecimal> balanceByCurrency = accounts.stream().collect(Collectors.groupingBy(
+                Account::getCurrency,
+                Collectors.reducing(BigDecimal.ZERO, Account::getBalance, BigDecimal::add)));
+
+        accountSummary.setBalanceByCurrency(balanceByCurrency);
+
+        Map<String, Integer> accountByType =
+                accounts.stream().collect(Collectors.groupingBy(Account::getAccountType,
+                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)));
+
+        accountSummary.setAccountTypes(accountByType);
+
+        return accountSummary;
     }
 
     private String generateAccountNumber() {

@@ -1,5 +1,6 @@
 package com.novabank.features.account.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.novabank.features.account.dto.AccountRequest;
 import com.novabank.features.account.dto.AccountResponse;
+import com.novabank.features.account.dto.CustomerAccountSummary;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.mapper.AccountMapper;
 import com.novabank.features.account.service.AccountService;
@@ -85,6 +87,22 @@ public class AccountController {
                 accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
 
         return ResponseEntity.ok(accountResponses);
+    }
+
+    @GetMapping("/{id}/balance")
+    public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long id) {
+
+        Account account = accountService.getAccountById(id);
+
+        return ResponseEntity.ok(account.getBalance());
+    }
+
+    @GetMapping("/customer/{customerId}/account-summary")
+    public ResponseEntity<CustomerAccountSummary> getCustomerAccountSummary(@PathVariable Long customerId) {
+
+        CustomerAccountSummary accountSummary = accountService.getCustomerSummary(customerId);
+
+        return ResponseEntity.ok(accountSummary);
     }
 
     @PutMapping("/{id}")
