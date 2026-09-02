@@ -98,4 +98,20 @@ public class AccountServiceTest {
         verify(accountRepository, never()).findByAccountNumber(anyString());
         verify(accountRepository, never()).save(any(Account.class));
     }
+
+    @Test
+    void getAccountById_ShouldReturnAccount_WhenFound() {
+        // Arrange
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        // Act
+        Account result = accountService.getAccountById(1L);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals(account.getAccountNumber(), result.getAccountNumber());
+
+        verify(accountRepository).findById(1L);
+    }
 }
