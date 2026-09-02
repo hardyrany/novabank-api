@@ -49,4 +49,14 @@ public class AccountController {
         return ResponseEntity.ok(accountResponse);
     }
 
+    @GetMapping("/account-number/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccountByAccountNumber(
+            @PathVariable String accountNumber) {
+
+        Account account = accountService.getAccountByAccountNumber(accountNumber);
+        AccountResponse accountResponse = accountMapper.toResponse(account);
+
+        return ResponseEntity.ok(accountResponse);
+    }
+
 }
