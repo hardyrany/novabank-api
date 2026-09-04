@@ -36,4 +36,8 @@ public class TransactionService {
     public List<Transaction> getHistoryByAccountId(Long accountId) {
         return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
     }
+
+    public List<Transaction> getRecentTransactions(Long accountId) {
+        return transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
+    }
 }
