@@ -131,4 +131,37 @@ public class TransactionServiceTest {
 
         verify(transactionRepository).findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
     }
+
+    @Test
+    void getHistoryByAccountIdAndType_ShouldFilterByType_WhenValidType() {
+        // Arrange
+        List<Transaction> deposits = new ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            Transaction t = new Transaction();
+            t.setId((long) i);
+            t.setAccountId(accountId);
+            t.setTransactionType(TransactionType.DEPOSIT);
+            t.setAmount(BigDecimal.valueOf(i * 100.00));
+            t.setBalanceAfter(BigDecimal.valueOf(500.00 + (i * 100.00)));
+            t.setDescription("Deposit " + i);
+            t.setCreatedAt(LocalDateTime.now().minusMinutes(i));
+            deposits.add(t);
+        }
+
+        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(accountId,
+                TransactionType.DEPOSIT)).thenReturn(deposits);
+
+        // Act
+        List<Transaction> result =
+                transactionService.getHistoryByAccountIdAndType(accountId, TransactionType.DEPOSIT);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertTrue(
+                result.stream().allMatch(t -> t.getTransactionType() == TransactionType.DEPOSIT));
+
+        verify(transactionRepository).findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(
+                accountId, TransactionType.DEPOSIT);
+    }
 }
