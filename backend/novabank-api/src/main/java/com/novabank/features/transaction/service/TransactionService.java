@@ -37,6 +37,7 @@ public class TransactionService {
         return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
     }
 
+    @Transactional(readOnly = true)
     public List<Transaction> getRecentTransactions(Long accountId) {
         return transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
     }
