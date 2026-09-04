@@ -32,7 +32,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountId(Long accountId) {
         return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
     }
