@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,5 +97,38 @@ public class TransactionServiceTest {
         assertEquals(TransactionType.WITHDRAW, result.get(1).getTransactionType());
 
         verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
+    }
+
+    @Test
+    void getRecentTransactions_ShouldReturnLast10Transactions_WhenAccountHasManyTransactions() {
+        // Arrange
+        List<Transaction> transactions = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            Transaction t = new Transaction();
+            t.setId((long) i);
+            t.setAccountId(accountId);
+            t.setTransactionType(i % 2 == 0 ? TransactionType.DEPOSIT : TransactionType.WITHDRAW);
+            t.setAmount(BigDecimal.valueOf(i * 10.00));
+            t.setBalanceAfter(BigDecimal.valueOf(1000.00 - (i * 10.00)));
+            t.setDescription("Transaction " + i);
+            // Data: quanto maior o i, mais recente (i=10 é o mais recente)
+            t.setCreatedAt(LocalDateTime.now().minusMinutes(10 - i));
+            transactions.add(t);
+        }
+        // Ordena manualmente: do mais recente para o mais antigo
+        transactions.sort((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()));
+
+        when(transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId))
+                .thenReturn(transactions);
+
+        // Act
+        List<Transaction> result = transactionService.getRecentTransactions(accountId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(10, result.size());
+        assertEquals("Transaction 10", result.get(0).getDescription()); // ✅ Agora passa
+
+        verify(transactionRepository).findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
     }
 }
