@@ -1,8 +1,12 @@
 package com.novabank.features.transaction.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,5 +45,25 @@ public class TransactionServiceTest {
         transaction.setDescription("Test deposit");
         transaction.setCreatedAt(LocalDateTime.now());
 
+    }
+
+    @Test
+    void recordEntry_ShouldSaveTransaction_WhenSuccessful() {
+        // Arrange
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+
+        // Act
+        Transaction result = transactionService.transactionRecordEntry(accountId,
+                TransactionType.DEPOSIT, amount, balanceAfter, "Test deposit");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(accountId, result.getAccountId());
+        assertEquals(TransactionType.DEPOSIT, result.getTransactionType());
+        assertEquals(amount, result.getAmount());
+        assertEquals(balanceAfter, result.getBalanceAfter());
+        assertEquals("Test deposit", result.getDescription());
+
+        verify(transactionRepository).save(any(Transaction.class));
     }
 }
