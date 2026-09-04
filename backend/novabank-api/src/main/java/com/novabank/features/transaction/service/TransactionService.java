@@ -1,6 +1,7 @@
 package com.novabank.features.transaction.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.transaction.entity.Transaction;
@@ -31,4 +32,8 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    @Transactional
+    public List<Transaction> getHistoryByAccountId(Long accountId) {
+        return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
+    }
 }
