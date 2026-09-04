@@ -1,5 +1,6 @@
 package com.novabank.features.transaction.service;
 
+import com.novabank.features.customer.repository.CustomerRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,13 @@ import com.novabank.features.transaction.repository.TransactionRepository;
 @Transactional
 public class TransactionService {
 
+    private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
 
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository,
+            CustomerRepository customerRepository) {
         this.transactionRepository = transactionRepository;
+        this.customerRepository = customerRepository;
     }
 
     public Transaction transactionRecordEntry(Long accountId, TransactionType transactionType,
@@ -40,5 +44,12 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public List<Transaction> getRecentTransactions(Long accountId) {
         return transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Transaction> getHistoryByAccountIdAndType(Long accountId,
+            TransactionType transactionType) {
+        return transactionRepository
+                .findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(accountId, transactionType);
     }
 }
