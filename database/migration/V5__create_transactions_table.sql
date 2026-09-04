@@ -19,3 +19,35 @@ CREATE TABLE IF NOT EXISTS transactions.transactions (
         )
     )
 );
+
+-- Passo 3: Adicionar campos complementares
+ALTER TABLE transactions.transactions
+ADD COLUMN currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+ADD COLUMN balance_after DECIMAL(19, 2) NOT NULL,
+ADD COLUMN description TEXT,
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL;
+
+-- Preencher valores para registros existentes (segurança)
+UPDATE transactions.transactions
+SET
+    balance_after = 0
+WHERE
+    balance_after IS NULL;
+
+UPDATE transactions.transactions
+SET
+    currency = 'USD'
+WHERE
+    currency IS NULL;
+
+-- Aplicar NOT NULL constraints
+ALTER TABLE transactions.transactions
+ALTER COLUMN currency
+SET
+    NOT NULL,
+ALTER COLUMN balance_after
+SET
+    NOT NULL,
+ALTER COLUMN created_at
+SET
+    NOT NULL;
