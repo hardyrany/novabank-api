@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,5 +67,34 @@ public class TransactionServiceTest {
         assertEquals("Test deposit", result.getDescription());
 
         verify(transactionRepository).save(any(Transaction.class));
+    }
+
+    @Test
+    void getHistoryByAccountId_ShouldReturnTransactionList_WhenAccountHasTransactions() {
+        // Arrange
+        Transaction transaction2 = new Transaction();
+        transaction2.setId(2L);
+        transaction2.setAccountId(accountId);
+        transaction2.setTransactionType(TransactionType.WITHDRAW);
+        transaction2.setAmount(BigDecimal.valueOf(50.00));
+        transaction2.setBalanceAfter(BigDecimal.valueOf(450.00));
+        transaction2.setDescription("Test withdraw");
+        transaction2.setCreatedAt(LocalDateTime.now());
+
+        List<Transaction> transactions = Arrays.asList(transaction, transaction2);
+
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
+                .thenReturn(transactions);
+
+        // Act
+        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(TransactionType.DEPOSIT, result.get(0).getTransactionType());
+        assertEquals(TransactionType.WITHDRAW, result.get(1).getTransactionType());
+
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
     }
 }
