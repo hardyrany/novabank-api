@@ -51,3 +51,9 @@ SET
 ALTER COLUMN created_at
 SET
     NOT NULL;
+
+-- Passo 4: Adicionar índices
+
+CREATE INDEX idx_transactions_account_id ON transactions.transactions (account_id);
+
+CREATE INDEX idx_transactions_created_at ON transactions.transactions (created_at DESC);
