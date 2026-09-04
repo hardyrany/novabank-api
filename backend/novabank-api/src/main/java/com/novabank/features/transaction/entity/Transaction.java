@@ -1,6 +1,7 @@
 package com.novabank.features.transaction.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import com.novabank.features.transaction.enums.TransactionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +29,18 @@ public class Transaction {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
+
+    @Column(length = 3)
+    private String currency = "USD";
+
+    @Column(name = "balance_after", nullable = false, precision = 19, scale = 2)
+    private BigDecimal balanceAfter;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -59,6 +72,38 @@ public class Transaction {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public BigDecimal getBalanceAfter() {
+        return balanceAfter;
+    }
+
+    public void setBalanceAfter(BigDecimal balanceAfter) {
+        this.balanceAfter = balanceAfter;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
 }
