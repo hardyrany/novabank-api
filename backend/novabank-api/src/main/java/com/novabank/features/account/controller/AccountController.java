@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.novabank.features.account.dto.AccountRequest;
 import com.novabank.features.account.dto.AccountResponse;
 import com.novabank.features.account.dto.CustomerAccountSummary;
+import com.novabank.features.account.dto.DepositRequest;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.mapper.AccountMapper;
 import com.novabank.features.account.service.AccountService;
@@ -98,7 +99,8 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}/account-summary")
-    public ResponseEntity<CustomerAccountSummary> getCustomerAccountSummary(@PathVariable Long customerId) {
+    public ResponseEntity<CustomerAccountSummary> getCustomerAccountSummary(
+            @PathVariable Long customerId) {
 
         CustomerAccountSummary accountSummary = accountService.getCustomerSummary(customerId);
 
@@ -135,6 +137,18 @@ public class AccountController {
 
         return ResponseEntity.ok(accountResponse);
 
+    }
+
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<AccountResponse> deposit(@PathVariable Long id,
+            @RequestBody DepositRequest depositRequest) {
+
+        Account updatedAccount = accountService.deposit(id, depositRequest.getAmount(),
+                depositRequest.getDescription());
+
+        AccountResponse accountResponse = accountMapper.toResponse(updatedAccount);
+
+        return ResponseEntity.ok(accountResponse);
     }
 
 }
