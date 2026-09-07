@@ -1,5 +1,6 @@
 package com.novabank.features.transfer.service;
 
+import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.account.service.AccountService;
@@ -17,4 +18,8 @@ public class TransferService {
         this.transactionService = transactionService;
     }
 
+    public void transfer(Long sourceAccountId, Long targetAccountId, BigDecimal amount,
+            String description) {
+
+    }
 }
