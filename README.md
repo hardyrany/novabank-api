@@ -29,6 +29,7 @@
 |------------|---------|
 | Java | 21 |
 | Spring Boot | 4.1.1 |
+| Spring Boot Actuator | - |
 | Spring Data JPA | - |
 | Flyway | - |
 | PostgreSQL | 16.15 |
@@ -37,48 +38,81 @@
 | JUnit 5 | - |
 | OpenAPI (Swagger) | 2.8.4 |
 
+### Code Quality & Security
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Checkstyle | 3.6.0 | Style/convention checks, runs on `validate` phase |
+| SpotBugs | 4.10.4.0 | Static analysis for bug patterns, runs on `verify` phase |
+| OWASP Dependency-Check | 13.0.0 | CVE scanning against the NVD database, runs on `verify` phase (fails the build on CVSS ≥ 7) |
+
 ---
 
 ## 📂 Project Structure
 
 ```
-src/main/java/com/novabank/
-├── features/
-│   ├── customer/
-│   │   ├── dto/
-│   │   ├── entity/
-│   │   ├── repository/
-│   │   └── service/
-│   ├── account/
-│   │   ├── dto/
-│   │   ├── entity/
-│   │   ├── mapper/
-│   │   ├── repository/
-│   │   └── service/
-│   ├── transaction/
-│   │   ├── entity/
-│   │   ├── enums/
-│   │   ├── repository/
-│   │   └── service/
-│   └── transfer/
-│       ├── dto/
-│       ├── service/
-│       └── controller/
-├── infra/
-│   ├── config/
-│   └── exception/
-└── NovaBankApiApplication.java
-
-src/main/resources/
-├── db/migration/
-│   ├── V1__create_customers_table.sql
-│   ├── V2__create_accounts_table.sql
-│   ├── V3__alter_customers_add_constraints.sql
-│   ├── V4__alter_accounts_add_constraints.sql
-│   └── V5__create_transactions_table.sql
-├── application.yml
-├── application-dev.yml
-└── application-test.yml
+novabank/
+├── backend/
+│   └── novabank-api/
+│       ├── src/
+│       │   ├── main/
+│       │   │   ├── java/com/novabank/
+│       │   │   │   ├── features/
+│       │   │   │   │   ├── account/
+│       │   │   │   │   │   ├── controller/
+│       │   │   │   │   │   ├── dto/
+│       │   │   │   │   │   ├── entity/
+│       │   │   │   │   │   ├── mapper/
+│       │   │   │   │   │   ├── repository/
+│       │   │   │   │   │   └── service/
+│       │   │   │   │   ├── customer/
+│       │   │   │   │   │   ├── controller/
+│       │   │   │   │   │   ├── dto/
+│       │   │   │   │   │   ├── entity/
+│       │   │   │   │   │   ├── mapper/
+│       │   │   │   │   │   ├── repository/
+│       │   │   │   │   │   └── service/
+│       │   │   │   │   ├── health/
+│       │   │   │   │   └── transaction/
+│       │   │   │   │       ├── dto/
+│       │   │   │   │       ├── entity/
+│       │   │   │   │       ├── enums/
+│       │   │   │   │       ├── mapper/
+│       │   │   │   │       ├── repository/
+│       │   │   │   │       ├── service/
+│       │   │   │   │       └── transfer/
+│       │   │   │   │           ├── controller/
+│       │   │   │   │           ├── dto/
+│       │   │   │   │           └── service/
+│       │   │   │   ├── infra/
+│       │   │   │   │   ├── config/
+│       │   │   │   │   │   └── WebConfig.java
+│       │   │   │   │   └── exception/
+│       │   │   │   │       ├── BusinessException.java
+│       │   │   │   │       ├── ErrorResponse.java
+│       │   │   │   │       ├── GlobalExceptionHandler.java
+│       │   │   │   │       ├── ResourceNotFoundException.java
+│       │   │   │   │       └── UnauthorizedException.java
+│       │   │   │   └── NovabankApiApplication.java
+│       │   │   └── resources/
+│       │   │       ├── application.yml
+│       │   │       ├── application-dev.yml
+│       │   │       └── application-test.yml
+│       │   └── test/
+│       └── pom.xml
+├── database/
+│   └── migration/
+│       ├── V1__create_customers_table.sql
+│       ├── V2__create_accounts_table.sql
+│       ├── V3__alter_customers_add_constraints.sql
+│       ├── V4__alter_accounts_add_constraints.sql
+│       └── V5__create_transactions_table.sql
+├── docs/
+├── project-evolution/
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── README.md
 ```
 
 ---
@@ -98,16 +132,22 @@ src/main/resources/
 git clone https://github.com/your-username/novabank.git
 cd novabank
 
-# 2. Start the database
+# 2. Configure environment variables
+cp .env.example .env
+# edit .env with your local database credentials (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD)
+
+# 3. Start the database
 docker-compose up -d
 
-# 3. Run the application
+# 4. Run the application
 cd backend/novabank-api
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=test
 
-# 4. Run tests
+# 5. Run tests
 ./mvnw test
 ```
+
+> Database connection settings (host, port, credentials) are loaded from the `.env` file via `springboot4-dotenv`, not hardcoded in `application.yml`.
 
 ---
 
@@ -181,6 +221,15 @@ The project includes an end-to-end integration test (`MVPIntegrationTest`) that 
 
 ```bash
 ./mvnw test -Dtest=MVPIntegrationTest
+```
+
+### Full Verification (with Dependency Check)
+
+To run the complete build used in CI — tests plus OWASP Dependency-Check against the NVD database — export an NVD API key first ([request one here](https://nvd.nist.gov/developers/request-an-api-key)):
+
+```bash
+export NVD_API_KEY=your-nvd-api-key
+./mvnw clean verify -Dspring.profiles.active=test -DnvdApiKey=$NVD_API_KEY
 ```
 
 ---
