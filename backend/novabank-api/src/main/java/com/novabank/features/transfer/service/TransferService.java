@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
+import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 
@@ -45,6 +46,13 @@ public class TransferService {
         BigDecimal newTargetBalance = targetAccount.getBalance().add(amount);
         targetAccount.setBalance(newTargetBalance);
         accountService.updateAccount(targetAccountId, targetAccount);
+
+        String debitDescription =
+                description != null ? "Transfer to account " + targetAccountId + " - " + description
+                        : "Transfer to account " + targetAccountId;
+
+        transactionService.transactionRecordEntry(sourceAccountId, TransactionType.TRANSFER_OUT,
+                amount, newSourceBalance, debitDescription);
     }
 
 }
