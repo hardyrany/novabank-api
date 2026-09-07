@@ -1,22 +1,21 @@
 spring:
     datasource:
         url: jdbc:postgresql://localhost:5432/novabank_test
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
+        username: admin
+        password: admin123
         driver-class-name: org.postgresql.Driver
         hikari:
             maximum-pool-size: 2
 
     jpa:
         hibernate:
-            ddl-auto: none
+            ddl-auto: validate
         show-sql: false
 
     flyway:
         enabled: true
-        baseline-on-migrate: false
+        baseline-on-migrate: true
         locations: filesystem:../../database/migration
-        clean-disabled: true
 
 logging:
     level:
