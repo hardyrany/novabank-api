@@ -168,6 +168,22 @@ public class AccountService {
         return savedAccount;
     }
 
+    @Transactional
+    public Account withdraw(Long accountId, BigDecimal amount, String description) {
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Withdraw amount must be greater than zero");
+        }
+
+        Account account = getAccountById(accountId);
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new BusinessException("Insufficient balance for withdraw");
+        }
+
+        return account;
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
