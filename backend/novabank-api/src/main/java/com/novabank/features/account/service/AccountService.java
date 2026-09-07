@@ -181,7 +181,18 @@ public class AccountService {
             throw new BusinessException("Insufficient balance for withdraw");
         }
 
-        return account;
+        BigDecimal newBalance = account.getBalance().subtract(amount);
+        account.setBalance(newBalance);
+
+        Account savedAccount = accountRepository.save(account);
+
+        String transactionDescription =
+                description != null ? description : "Withdraw from amount " + accountId;
+
+        transactionService.transactionRecordEntry(accountId, TransactionType.WITHDRAW, amount,
+                newBalance, transactionDescription);
+
+        return savedAccount;
     }
 
     private String generateAccountNumber() {
