@@ -55,4 +55,36 @@ public class TransferServiceTest {
         targetAccount.setBalance(BigDecimal.valueOf(200.00));
     }
 
+    @Test
+    void transfer_ShouldSucceed_WhenValidRequest() {
+        // Arrange
+        BigDecimal newSourceBalance = BigDecimal.valueOf(400.00);
+        BigDecimal newTargetBalance = BigDecimal.valueOf(300.00);
+
+        when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
+        when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+        when(accountService.updateAccount(eq(sourceAccountId), any(Account.class)))
+                .thenReturn(sourceAccount);
+        when(accountService.updateAccount(eq(targetAccountId), any(Account.class)))
+                .thenReturn(targetAccount);
+
+        // Act
+        transferService.transfer(sourceAccountId, targetAccountId, amount, description);
+
+        // Assert
+        verify(accountService).getAccountById(sourceAccountId);
+        verify(accountService).getAccountById(targetAccountId);
+
+        verify(accountService).updateAccount(eq(sourceAccountId), any(Account.class));
+        verify(accountService).updateAccount(eq(targetAccountId), any(Account.class));
+
+        verify(transactionService).transactionRecordEntry(sourceAccountId,
+                TransactionType.TRANSFER_OUT, amount, newSourceBalance,
+                "Transfer to account 2 - Test transfer");
+
+        verify(transactionService).transactionRecordEntry(targetAccountId,
+                TransactionType.TRANSFER_IN, amount, newTargetBalance,
+                "Transfer from account 1 - Test transfer");
+    }
+
 }
