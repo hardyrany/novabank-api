@@ -337,4 +337,27 @@ public class AccountServiceTest {
         verify(transactionService).transactionRecordEntry(accountId, TransactionType.DEPOSIT,
                 depositAmount, expectedBalance, description);
     }
+
+    @Test
+    void deposit_ShouldThrowBusinessException_WhenAmountIsNegativeOrZero() {
+        // Arrange
+        Long accountId = 1L;
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, null, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, BigDecimal.ZERO, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, BigDecimal.valueOf(-100.00), "Test"));
+
+        verify(accountRepository, never()).findById(anyLong());
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
 }
