@@ -3,7 +3,7 @@ spring:
         name: novabank-api
 
     profiles:
-        default: dev
+        active: test
 
     jpa:
         open-in-view: false
