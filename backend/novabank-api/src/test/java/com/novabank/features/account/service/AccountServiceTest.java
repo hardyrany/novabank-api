@@ -405,4 +405,27 @@ public class AccountServiceTest {
         verify(transactionService).transactionRecordEntry(accountId, TransactionType.WITHDRAW,
                 withdrawAmount, expectedBalance, description);
     }
+
+    @Test
+    void withdraw_ShouldThrowBusinessException_WhenAmountIsNegativeOrZero() {
+        // Arrange
+        Long accountId = 1L;
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.withdraw(accountId, null, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.withdraw(accountId, BigDecimal.ZERO, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.withdraw(accountId, BigDecimal.valueOf(-100.00), "Test"));
+
+        verify(accountRepository, never()).findById(anyLong());
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
 }
