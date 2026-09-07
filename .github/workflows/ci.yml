@@ -17,8 +17,8 @@ jobs:
             postgres:
                 image: postgres:16
                 env:
-                    POSTGRES_USER: test
-                    POSTGRES_PASSWORD: test123
+                    POSTGRES_USER: admin
+                    POSTGRES_PASSWORD: admin123
                     POSTGRES_DB: novabank_test
                 ports:
                     - 5432:5432
@@ -29,8 +29,8 @@ jobs:
                     --health-retries 5
 
         env:
-            DB_USERNAME: test
-            DB_PASSWORD: test123
+            DB_USERNAME: admin
+            DB_PASSWORD: admin
             DB_NAME: novabank_test
 
         steps:
