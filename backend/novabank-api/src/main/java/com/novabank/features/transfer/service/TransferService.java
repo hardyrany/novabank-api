@@ -3,6 +3,7 @@ package com.novabank.features.transfer.service;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
@@ -29,5 +30,8 @@ public class TransferService {
         if (sourceAccountId.equals(targetAccountId)) {
             throw new BusinessException("Source and target accounts must be different");
         }
+
+        Account sourceAccount = accountService.getAccountById(sourceAccountId);
+        Account targetAccount = accountService.getAccountById(targetAccountId);
     }
 }
