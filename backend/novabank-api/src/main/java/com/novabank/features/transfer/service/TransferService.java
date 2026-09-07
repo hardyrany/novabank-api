@@ -53,6 +53,13 @@ public class TransferService {
 
         transactionService.transactionRecordEntry(sourceAccountId, TransactionType.TRANSFER_OUT,
                 amount, newSourceBalance, debitDescription);
+
+        String creditDescription = description != null
+                ? "Transfer from account " + sourceAccountId + " - " + description
+                : "Transfer from account " + sourceAccountId;
+
+        transactionService.transactionRecordEntry(targetAccountId, TransactionType.TRANSFER_IN,
+                amount, newTargetBalance, creditDescription);
     }
 
 }
