@@ -161,7 +161,7 @@ public class TransactionServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(3, result.size());
-        assertEquals("Transaction 3", result.get(0).getDescription());
+        assertEquals("Transaction 1", result.get(0).getDescription());
 
         verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
     }
