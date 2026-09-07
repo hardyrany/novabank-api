@@ -87,4 +87,29 @@ public class TransferServiceTest {
                 "Transfer from account 1 - Test transfer");
     }
 
+    @Test
+    void transfer_ShouldThrowBusinessException_WhenAmountIsInvalid() {
+        // Arrange
+        Long sourceAccountId = 1L;
+        Long targetAccountId = 2L;
+        String description = "Test transfer";
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, null, description));
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, BigDecimal.ZERO, description));
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, BigDecimal.valueOf(-100.00), description));
+
+        verify(accountService, never()).getAccountById(anyLong());
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
 }
