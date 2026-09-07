@@ -112,4 +112,19 @@ public class TransferServiceTest {
                 any());
     }
 
+    @Test
+    void transfer_ShouldThrowBusinessException_WhenSourceAndTargetAccountsAreSame() {
+        // Arrange
+        Long sameAccountId = 1L;
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> transferService.transfer(sameAccountId, sameAccountId, amount, description));
+
+        verify(accountService, never()).getAccountById(anyLong());
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
 }
