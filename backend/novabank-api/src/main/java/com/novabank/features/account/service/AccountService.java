@@ -140,6 +140,18 @@ public class AccountService {
         return accountSummary;
     }
 
+    @Transactional
+    public Account deposit(Long accountId, BigDecimal amount, String description) {
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Deposit amount must be greater than zero");
+        }
+
+        Account account = getAccountById(accountId);
+
+        return account;
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
