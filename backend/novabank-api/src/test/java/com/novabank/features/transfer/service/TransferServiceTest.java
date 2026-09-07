@@ -127,4 +127,20 @@ public class TransferServiceTest {
                 any());
     }
 
+    @Test
+    void transfer_ShouldThrowResourceNotFoundException_WhenSourceAccountNotFound() {
+        // Arrange
+        when(accountService.getAccountById(sourceAccountId)).thenThrow(
+                new ResourceNotFoundException("Account not found with id: " + sourceAccountId));
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> transferService
+                .transfer(sourceAccountId, targetAccountId, amount, description));
+
+        verify(accountService).getAccountById(sourceAccountId);
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
 }
