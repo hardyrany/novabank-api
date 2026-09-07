@@ -149,7 +149,12 @@ public class AccountService {
 
         Account account = getAccountById(accountId);
 
-        return account;
+        BigDecimal newBalance = account.getBalance().add(amount);
+        account.setBalance(newBalance);
+
+        Account savedAccount = accountRepository.save(account);
+
+        return savedAccount;
     }
 
     private String generateAccountNumber() {
