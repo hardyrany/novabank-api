@@ -41,7 +41,7 @@ public class TransferService {
 
         BigDecimal newSourceBalance = sourceAccount.getBalance().subtract(amount);
         sourceAccount.setBalance(newSourceBalance);
-        accountService.updateAccount(targetAccountId, targetAccount);
+        accountService.updateAccount(sourceAccountId, sourceAccount);
 
         BigDecimal newTargetBalance = targetAccount.getBalance().add(amount);
         targetAccount.setBalance(newTargetBalance);
