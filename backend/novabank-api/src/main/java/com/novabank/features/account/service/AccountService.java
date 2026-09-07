@@ -5,6 +5,8 @@ import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
+import com.novabank.features.transaction.enums.TransactionType;
+import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
@@ -18,17 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AccountService {
 
+    private final TransactionService transactionService;
     private final CustomerService customerService;
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public AccountService(AccountRepository accountRepository,
-            CustomerRepository customerRepository, CustomerService customerService) {
+            CustomerRepository customerRepository, CustomerService customerService,
+            TransactionService transactionService) {
 
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
         this.customerService = customerService;
+        this.transactionService = transactionService;
     }
 
     public Account createAccount(Account account) {
@@ -138,6 +143,29 @@ public class AccountService {
         accountSummary.setAccountTypes(accountByType);
 
         return accountSummary;
+    }
+
+    @Transactional
+    public Account deposit(Long accountId, BigDecimal amount, String description) {
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Deposit amount must be greater than zero");
+        }
+
+        Account account = getAccountById(accountId);
+
+        BigDecimal newBalance = account.getBalance().add(amount);
+        account.setBalance(newBalance);
+
+        Account savedAccount = accountRepository.save(account);
+
+        String transactionDescription =
+                description != null ? description : "Deposit to account: " + accountId;
+
+        transactionService.transactionRecordEntry(accountId, TransactionType.DEPOSIT, amount,
+                newBalance, transactionDescription);
+
+        return savedAccount;
     }
 
     private String generateAccountNumber() {

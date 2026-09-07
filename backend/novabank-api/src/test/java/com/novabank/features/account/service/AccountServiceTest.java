@@ -3,6 +3,7 @@ package com.novabank.features.account.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,8 @@ import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.customer.service.CustomerService;
+import com.novabank.features.transaction.enums.TransactionType;
+import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
@@ -31,6 +34,9 @@ public class AccountServiceTest {
 
     @Mock
     private CustomerService customerService;
+
+    @Mock
+    private TransactionService transactionService;
 
     @InjectMocks
     private AccountService accountService;
@@ -303,5 +309,73 @@ public class AccountServiceTest {
 
         verify(accountRepository).findById(99L);
         verify(accountRepository, never()).save(any(Account.class));
+    }
+
+    @Test
+    void deposit_ShouldUpdateBalanceAndReturnAccount_WhenSuccessful() {
+        // Arrange
+        Long accountId = 1L;
+        BigDecimal depositAmount = BigDecimal.valueOf(500.00);
+        String description = "Test deposit";
+        BigDecimal initialBalance = BigDecimal.valueOf(1000.00);
+        BigDecimal expectedBalance = BigDecimal.valueOf(1500.00);
+
+        account.setBalance(initialBalance);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        Account result = accountService.deposit(accountId, depositAmount, description);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedBalance, result.getBalance());
+
+        verify(accountRepository).findById(accountId);
+        verify(accountRepository).save(account);
+        verify(transactionService).transactionRecordEntry(accountId, TransactionType.DEPOSIT,
+                depositAmount, expectedBalance, description);
+    }
+
+    @Test
+    void deposit_ShouldThrowBusinessException_WhenAmountIsNegativeOrZero() {
+        // Arrange
+        Long accountId = 1L;
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, null, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, BigDecimal.ZERO, "Test"));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.deposit(accountId, BigDecimal.valueOf(-100.00), "Test"));
+
+        verify(accountRepository, never()).findById(anyLong());
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
+    @Test
+    void deposit_ShouldThrowResourceNotFoundException_WhenAccountNotFound() {
+        // Arrange
+        Long accountId = 99L;
+        BigDecimal amount = BigDecimal.valueOf(500.00);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> accountService.deposit(accountId, amount, "Test"));
+
+        verify(accountRepository).findById(accountId);
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
     }
 }
