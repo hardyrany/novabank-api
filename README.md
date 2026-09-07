@@ -1,157 +1,194 @@
 # NovaBank
 
-**NovaBank** é um sistema bancário desenvolvido em Java com Spring Boot, seguindo uma arquitetura monolítica modular orientada a features. Este projeto demonstra a aplicação de princípios de Clean Architecture, Domain-Driven Design e boas práticas de desenvolvimento para um MVP funcional.
+**NovaBank** is a banking system built with Java and Spring Boot, following a modular monolithic architecture organized by features. This project demonstrates the application of Clean Architecture principles, Domain-Driven Design, and good development practices for a functional MVP.
 
-## 📌 Status do Projeto
+## 📌 Project Status
 
-**Versão Atual:** `v0.1.0`
+**Current Version:** `v0.2.0`
 
-**Fase:** MVP Parcial — Fase 6, Parte 1
+**Phase:** Functionally Complete MVP (Phase 6, Part 2)
 
-**Checkpoint:** MVP parcial sem escalabilidade
+**Checkpoint:** MVP without authentication and without scalability
 
 | Feature | Status |
 |---------|--------|
-| Customer Create | ✅ Concluído |
-| Account Create | ✅ Concluído |
-| Account View | ✅ Concluído |
-| Transaction Ledger | ✅ Concluído |
+| Customer Create | ✅ Complete |
+| Account Create | ✅ Complete |
+| Account View | ✅ Complete |
+| Transaction Ledger | ✅ Complete |
+| Account Deposit | ✅ Complete |
+| Account Withdraw | ✅ Complete |
+| Transaction History | ✅ Complete |
+| Transfer Between Accounts | ✅ Complete |
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## 🚀 Technologies
 
-| Tecnologia | Versão |
-|------------|--------|
+| Technology | Version |
+|------------|---------|
 | Java | 21 |
 | Spring Boot | 4.1.1 |
+| Spring Boot Actuator | - |
 | Spring Data JPA | - |
 | Flyway | - |
 | PostgreSQL | 16.15 |
 | Maven | - |
 | Mockito | - |
 | JUnit 5 | - |
+| OpenAPI (Swagger) | 3.1.1 |
+
+### Code Quality & Security
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Checkstyle | 3.6.0 | Style/convention checks, runs on `validate` phase |
+| SpotBugs | 4.10.4.0 | Static analysis for bug patterns, runs on `verify` phase |
+| OWASP Dependency-Check | 13.0.0 | CVE scanning against the NVD database, runs on `verify` phase (fails the build on CVSS ≥ 7) |
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Project Structure
 
 ```
-src/main/java/com/novabank/
-├── features/
-│   ├── customer/
-│   │   ├── dto/
-│   │   ├── entity/
-│   │   ├── repository/
-│   │   └── service/
-│   ├── account/
-│   │   ├── dto/
-│   │   ├── entity/
-│   │   ├── mapper/
-│   │   ├── repository/
-│   │   └── service/
-│   └── transaction/
-│       ├── entity/
-│       ├── enums/
-│       ├── repository/
-│       └── service/
-├── infra/
-│   ├── config/
-│   └── exception/
-└── NovaBankApiApplication.java
-
-src/main/resources/
-├── db/migration/
-│   ├── V1__create_customers_table.sql
-│   ├── V2__create_accounts_table.sql
-│   ├── V3__alter_customers_add_constraints.sql
-│   ├── V4__alter_accounts_add_constraints.sql
-│   └── V5__create_transactions_table.sql
-├── application.yml
-├── application-dev.yml
-└── application-test.yml
+novabank/
+├── backend/
+│   └── novabank-api/
+│       ├── src/
+│       │   ├── main/
+│       │   │   ├── java/com/novabank/
+│       │   │   │   ├── features/
+│       │   │   │   │   ├── account/
+│       │   │   │   │   │   ├── controller/
+│       │   │   │   │   │   ├── dto/
+│       │   │   │   │   │   ├── entity/
+│       │   │   │   │   │   ├── mapper/
+│       │   │   │   │   │   ├── repository/
+│       │   │   │   │   │   └── service/
+│       │   │   │   │   ├── customer/
+│       │   │   │   │   │   ├── controller/
+│       │   │   │   │   │   ├── dto/
+│       │   │   │   │   │   ├── entity/
+│       │   │   │   │   │   ├── mapper/
+│       │   │   │   │   │   ├── repository/
+│       │   │   │   │   │   └── service/
+│       │   │   │   │   ├── health/
+│       │   │   │   │   └── transaction/
+│       │   │   │   │       ├── dto/
+│       │   │   │   │       ├── entity/
+│       │   │   │   │       ├── enums/
+│       │   │   │   │       ├── mapper/
+│       │   │   │   │       ├── repository/
+│       │   │   │   │       ├── service/
+│       │   │   │   │       └── transfer/
+│       │   │   │   │           ├── controller/
+│       │   │   │   │           ├── dto/
+│       │   │   │   │           └── service/
+│       │   │   │   ├── infra/
+│       │   │   │   │   ├── config/
+│       │   │   │   │   │   └── WebConfig.java
+│       │   │   │   │   └── exception/
+│       │   │   │   │       ├── BusinessException.java
+│       │   │   │   │       ├── ErrorResponse.java
+│       │   │   │   │       ├── GlobalExceptionHandler.java
+│       │   │   │   │       ├── ResourceNotFoundException.java
+│       │   │   │   │       └── UnauthorizedException.java
+│       │   │   │   └── NovabankApiApplication.java
+│       │   │   └── resources/
+│       │   │       ├── application.yml
+│       │   │       ├── application-dev.yml
+│       │   │       └── application-test.yml
+│       │   └── test/
+│       └── pom.xml
+├── database/
+│   └── migration/
+│       ├── V1__create_customers_table.sql
+│       ├── V2__create_accounts_table.sql
+│       ├── V3__alter_customers_add_constraints.sql
+│       ├── V4__alter_accounts_add_constraints.sql
+│       └── V5__create_transactions_table.sql
+├── docs/
+├── project-evolution/
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── README.md
 ```
 
 ---
 
-## 🛠️ Como Executar o Projeto
+## 🛠️ How to Run the Project
 
-### Pré-requisitos
+### Prerequisites
 
 - Java 21
-- Docker e Docker Compose
+- Docker and Docker Compose
 - Maven
-- PostgreSQL (via Docker)
 
-### Passo a Passo
+### Step by Step
 
 ```bash
-# Clonar o repositório
+# 1. Clone the repository
 git clone https://github.com/your-username/novabank.git
 cd novabank
 
-# Subir o banco de dados
+# 2. Configure environment variables
+cp .env.example .env
+# edit .env with your local database credentials (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD)
+
+# 3. Start the database
 docker-compose up -d
 
-# Rodar a aplicação
+# 4. Run the application
 cd backend/novabank-api
-./mvnw spring-boot:run
-
-# Rodar em profile de teste
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=test
 
-# Rodar os testes
+# 5. Run tests
 ./mvnw test
 ```
 
+> Database connection settings (host, port, credentials) are loaded from the `.env` file via `springboot4-dotenv`, not hardcoded in `application.yml`.
+
 ---
 
-## 📋 Endpoints Disponíveis (v0.1.0)
+## 📋 Available Endpoints (v0.2.0)
 
 ### Customer
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | [`http://localhost:8080/api/v1/customers`](http://localhost:8080/api/v1/customers) | Criar um novo cliente |
+| Method | Endpoint | Description |
+|--------|----------|--------------|
+| POST | `/api/v1/customers` | Create a new customer |
 
 ### Account
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | [`http://localhost:8080/api/v1/accounts`](http://localhost:8080/api/v1/accounts) | Criar uma nova conta |
-| GET | [`http://localhost:8080/api/v1/accounts/{id}`](http://localhost:8080/api/v1/accounts/{id}) | Buscar conta por ID |
-| GET | [`http://localhost:8080/api/v1/accounts/account-number/{accountNumber}`](http://localhost:8080/api/v1/accounts/account-number/{accountNumber}) | Buscar conta por número |
-| GET | [`http://localhost:8080/api/v1/accounts/customer/{customerId}`](http://localhost:8080/api/v1/accounts/customer/{customerId}) | Listar contas de um cliente |
-| GET | [`http://localhost:8080/api/v1/accounts/active`](http://localhost:8080/api/v1/accounts/active) | Listar contas ativas |
-| GET | [`http://localhost:8080/api/v1/accounts/{id}/balance`](http://localhost:8080/api/v1/accounts/{id}/balance) | Consultar saldo da conta |
-| GET | [`http://localhost:8080/api/v1/accounts/customer/{customerId}/account-summary`](http://localhost:8080/api/v1/accounts/customer/{customerId}/account-summary) | Resumo financeiro do cliente |
-| PUT | [`http://localhost:8080/api/v1/accounts/{id}`](http://localhost:8080/api/v1/accounts/{id}) | Atualizar conta |
-| DELETE | [`http://localhost:8080/api/v1/accounts/{id}`](http://localhost:8080/api/v1/accounts/{id}) | Desativar conta (soft delete) |
-| PATCH | [`http://localhost:8080/api/v1/accounts/{id}/activate`](http://localhost:8080/api/v1/accounts/{id}/activate) | Reativar conta |
+| Method | Endpoint | Description |
+|--------|----------|--------------|
+| POST | `/api/v1/accounts` | Create a new account |
+| GET | `/api/v1/accounts/{id}` | Get account by ID |
+| GET | `/api/v1/accounts/account-number/{accountNumber}` | Get account by number |
+| GET | `/api/v1/accounts/customer/{customerId}` | List customer accounts |
+| GET | `/api/v1/accounts/active` | List active accounts |
+| GET | `/api/v1/accounts/{id}/balance` | Get account balance |
+| GET | `/api/v1/accounts/customer/{customerId}/account-summary` | Customer financial summary |
+| PUT | `/api/v1/accounts/{id}` | Update account |
+| DELETE | `/api/v1/accounts/{id}` | Deactivate account (soft delete) |
+| PATCH | `/api/v1/accounts/{id}/activate` | Reactivate account |
+| POST | `/api/v1/accounts/{id}/deposit` | Deposit into account |
+| POST | `/api/v1/accounts/{id}/withdraw` | Withdraw from account |
+| GET | `/api/v1/accounts/{id}/transactions` | Transaction history |
 
-### Transaction
+### Transfer
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| - | - | Sem endpoints próprios (ledger interno) |
-
----
-
-## ✅ Cobertura de Testes
-
-| Módulo | Testes | Status |
-|--------|--------|--------|
-| Customer Service | 19 testes | ✅ |
-| Account Service | 17 testes | ✅ |
-| Account Controller | Testes de integração | ✅ |
-| Transaction Service | 4 testes | ✅ |
+| Method | Endpoint | Description |
+|--------|----------|--------------|
+| POST | `/api/v1/transfers` | Transfer between accounts |
 
 ---
 
-## 📦 Migrações Flyway
+## 📦 Flyway Migrations
 
-| Migration | Descrição |
-|-----------|-----------|
+| Migration | Description |
+|-----------|--------------|
 | V1 | Create customers table |
 | V2 | Create accounts table |
 | V3 | Add constraints to customers |
@@ -160,36 +197,70 @@ cd backend/novabank-api
 
 ---
 
-## 📚 Documentação Técnica
+## 🧪 Tests
 
-### Camadas e Responsabilidades
+### Test Coverage
 
-| Camada | Responsabilidade |
-|--------|-------------------|
-| Entity | Modelo de dados (espelho da tabela) |
-| Repository | Acesso a dados (JPA) |
-| DTO | Contrato da API (entrada/saída) |
-| Mapper | Conversão Entity ↔ DTO |
-| Service | Lógica de negócio |
-| Controller | Endpoints HTTP |
+| Module | Tests | Status |
+|--------|-------|--------|
+| Customer Service | 19 tests | ✅ |
+| Account Service | 17 tests | ✅ |
+| Account Controller | Integration tests | ✅ |
+| Transaction Service | 5 tests | ✅ |
+| Transfer Service | 6 tests | ✅ |
 
-### Padrão de Construção
+### End-to-End Test
 
-Cada vertical slice segue a ordem:
+The project includes an end-to-end integration test (`MVPIntegrationTest`) that validates the complete flow:
 
-1. Migration
-2. Entity
-3. Repository
-4. DTO
-5. Mapper
-6. Service
-7. Controller
-8. Test
+1. Create customer
+2. Create account
+3. Deposit
+4. Transfer
+5. View transaction history
+
+```bash
+./mvnw test -Dtest=MVPIntegrationTest
+```
+
+### Full Verification (with Dependency Check)
+
+To run the complete build used in CI — tests plus OWASP Dependency-Check against the NVD database — export an NVD API key first ([request one here](https://nvd.nist.gov/developers/request-an-api-key)):
+
+```bash
+export NVD_API_KEY=your-nvd-api-key
+./mvnw clean verify -Dspring.profiles.active=test -DnvdApiKey=$NVD_API_KEY
+```
 
 ---
 
-## 🏷️ Tags de Release
+## 📚 API Documentation
 
-| Tag | Descrição |
-|-----|-----------|
-| v0.1.0 | MVP parcial — customer-create, account-create, account-view, transaction-ledger |
+Interactive API documentation is available at:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+
+---
+
+## 🏷️ Release Tags
+
+| Tag | Description |
+|-----|--------------|
+| v0.1.0 | Partial MVP — customer-create, account-create, account-view, transaction-ledger |
+| v0.2.0 | Functionally complete MVP — deposit, withdraw, history, transfer |
+
+---
+
+## 📌 Next Steps
+
+| Phase | Description |
+|-------|--------------|
+| Phase 8 | Authentication (user-create, auth-login, auth-protect-endpoints) |
+| Phase 9+ | Backlog (limit, loan, notification, report) |
+
+---
+
+## 📄 License
+
+MIT License
