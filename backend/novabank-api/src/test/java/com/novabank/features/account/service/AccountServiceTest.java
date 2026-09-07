@@ -360,4 +360,22 @@ public class AccountServiceTest {
         verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
                 any());
     }
+
+    @Test
+    void deposit_ShouldThrowResourceNotFoundException_WhenAccountNotFound() {
+        // Arrange
+        Long accountId = 99L;
+        BigDecimal amount = BigDecimal.valueOf(500.00);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> accountService.deposit(accountId, amount, "Test"));
+
+        verify(accountRepository).findById(accountId);
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
 }
