@@ -33,5 +33,10 @@ public class TransferService {
 
         Account sourceAccount = accountService.getAccountById(sourceAccountId);
         Account targetAccount = accountService.getAccountById(targetAccountId);
+
+        if (sourceAccount.getBalance().compareTo(amount) < 0) {
+            throw new BusinessException("Insufficient balance for transfer");
+        }
     }
+
 }
