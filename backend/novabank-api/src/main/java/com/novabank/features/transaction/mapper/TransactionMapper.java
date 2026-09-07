@@ -1,5 +1,7 @@
 package com.novabank.features.transaction.mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import com.novabank.features.transaction.dto.TransactionResponse;
 import com.novabank.features.transaction.entity.Transaction;
@@ -25,5 +27,14 @@ public class TransactionMapper {
         transactionResponse.setCreatedAt(transaction.getCreatedAt());
 
         return transactionResponse;
+    }
+
+    public List<TransactionResponse> toResponseList(List<Transaction> transactions) {
+
+        if (transactions == null) {
+            return List.of();
+        }
+
+        return transactions.stream().map(this::toResponse).collect(Collectors.toList());
     }
 }
