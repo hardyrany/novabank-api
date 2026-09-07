@@ -165,4 +165,22 @@ public class TransactionServiceTest {
 
         verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
     }
+
+    @Test
+    void getHistoryByAccountId_ShouldReturnEmptyList_WhenAccountHasNoTransactions() {
+        // Arrange
+        List<Transaction> emptyList = new ArrayList<>();
+
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
+                .thenReturn(emptyList);
+
+        // Act
+        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
+    }
 }
