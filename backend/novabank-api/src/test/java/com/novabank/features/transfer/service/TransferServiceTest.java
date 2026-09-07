@@ -161,4 +161,23 @@ public class TransferServiceTest {
                 any());
     }
 
+    @Test
+    void transfer_ShouldThrowBusinessException_WhenInsufficientBalance() {
+        // Arrange
+        BigDecimal transferAmount = BigDecimal.valueOf(600.00);
+
+        when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
+        when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, transferAmount, description));
+
+        verify(accountService).getAccountById(sourceAccountId);
+        verify(accountService).getAccountById(targetAccountId);
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
 }
