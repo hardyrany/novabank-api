@@ -428,4 +428,25 @@ public class AccountServiceTest {
         verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
                 any());
     }
+
+    @Test
+    void withdraw_ShouldThrowBusinessException_WhenInsufficientBalance() {
+        // Arrange
+        Long accountId = 1L;
+        BigDecimal withdrawAmount = BigDecimal.valueOf(2000.00); // Maior que o saldo
+        BigDecimal initialBalance = BigDecimal.valueOf(1500.00);
+
+        account.setBalance(initialBalance);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+
+        // Act & Assert
+        assertThrows(BusinessException.class,
+                () -> accountService.withdraw(accountId, withdrawAmount, "Test"));
+
+        verify(accountRepository).findById(accountId);
+        verify(accountRepository, never()).save(any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
 }
