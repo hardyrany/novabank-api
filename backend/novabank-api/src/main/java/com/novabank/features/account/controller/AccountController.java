@@ -18,6 +18,7 @@ import com.novabank.features.account.dto.AccountRequest;
 import com.novabank.features.account.dto.AccountResponse;
 import com.novabank.features.account.dto.CustomerAccountSummary;
 import com.novabank.features.account.dto.DepositRequest;
+import com.novabank.features.account.dto.WithdrawRequest;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.mapper.AccountMapper;
 import com.novabank.features.account.service.AccountService;
@@ -146,6 +147,17 @@ public class AccountController {
         Account updatedAccount = accountService.deposit(id, depositRequest.getAmount(),
                 depositRequest.getDescription());
 
+        AccountResponse accountResponse = accountMapper.toResponse(updatedAccount);
+
+        return ResponseEntity.ok(accountResponse);
+    }
+
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<AccountResponse> withdraw(@PathVariable Long id,
+            @RequestBody WithdrawRequest withdrawRequest) {
+
+        Account updatedAccount = accountService.withdraw(id, withdrawRequest.getAmount(),
+                withdrawRequest.getDescription());
         AccountResponse accountResponse = accountMapper.toResponse(updatedAccount);
 
         return ResponseEntity.ok(accountResponse);
