@@ -36,7 +36,7 @@
 | Maven | - |
 | Mockito | - |
 | JUnit 5 | - |
-| OpenAPI (Swagger) | 2.8.4 |
+| OpenAPI (Swagger) | 3.1.1 |
 
 ### Code Quality & Security
 
