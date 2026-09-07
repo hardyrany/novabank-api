@@ -25,5 +25,9 @@ public class TransferService {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Transfer amount must be greater than zero");
         }
+
+        if (sourceAccountId.equals(targetAccountId)) {
+            throw new BusinessException("Source and target accounts must be different");
+        }
     }
 }
