@@ -37,6 +37,10 @@ public class TransferService {
         if (sourceAccount.getBalance().compareTo(amount) < 0) {
             throw new BusinessException("Insufficient balance for transfer");
         }
+
+        BigDecimal newSourceBalance = sourceAccount.getBalance().subtract(amount);
+        sourceAccount.setBalance(newSourceBalance);
+        accountService.updateAccount(targetAccountId, targetAccount);
     }
 
 }
