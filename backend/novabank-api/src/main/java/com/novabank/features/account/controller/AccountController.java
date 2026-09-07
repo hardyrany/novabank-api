@@ -22,6 +22,10 @@ import com.novabank.features.account.dto.WithdrawRequest;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.mapper.AccountMapper;
 import com.novabank.features.account.service.AccountService;
+import com.novabank.features.transaction.dto.TransactionResponse;
+import com.novabank.features.transaction.entity.Transaction;
+import com.novabank.features.transaction.mapper.TransactionMapper;
+import com.novabank.features.transaction.service.TransactionService;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
@@ -29,11 +33,16 @@ public class AccountController {
 
     private final AccountService accountService;
     private final AccountMapper accountMapper;
+    private final TransactionService transactionService;
+    private final TransactionMapper transactionMapper;
 
-    public AccountController(AccountService accountService, AccountMapper accountMapper) {
+    public AccountController(AccountService accountService, AccountMapper accountMapper,
+            TransactionService transactionService, TransactionMapper transactionMapper) {
 
         this.accountService = accountService;
         this.accountMapper = accountMapper;
+        this.transactionService = transactionService;
+        this.transactionMapper = transactionMapper;
 
     }
 
@@ -162,5 +171,16 @@ public class AccountController {
 
         return ResponseEntity.ok(accountResponse);
     }
+
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<List<TransactionResponse>> getTransactionResponse(@PathVariable Long id) {
+
+        List<Transaction> transactions = transactionService.getHistoryByAccountId(id);
+        List<TransactionResponse> transactionResponses =
+                transactionMapper.toResponseList(transactions);
+
+        return ResponseEntity.ok(transactionResponses);
+    }
+
 
 }
