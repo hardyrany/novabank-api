@@ -378,4 +378,31 @@ public class AccountServiceTest {
         verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
                 any());
     }
+
+    @Test
+    void withdraw_ShouldUpdateBalanceAndReturnAccount_WhenSuccessful() {
+        // Arrange
+        Long accountId = 1L;
+        BigDecimal withdrawAmount = BigDecimal.valueOf(200.00);
+        String description = "Test withdraw";
+        BigDecimal initialBalance = BigDecimal.valueOf(1500.00);
+        BigDecimal expectedBalance = BigDecimal.valueOf(1300.00);
+
+        account.setBalance(initialBalance);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        Account result = accountService.withdraw(accountId, withdrawAmount, description);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedBalance, result.getBalance());
+
+        verify(accountRepository).findById(accountId);
+        verify(accountRepository).save(account);
+        verify(transactionService).transactionRecordEntry(accountId, TransactionType.WITHDRAW,
+                withdrawAmount, expectedBalance, description);
+    }
 }
