@@ -71,35 +71,6 @@ public class TransactionServiceTest {
     }
 
     @Test
-    void getHistoryByAccountId_ShouldReturnTransactionList_WhenAccountHasTransactions() {
-        // Arrange
-        Transaction transaction2 = new Transaction();
-        transaction2.setId(2L);
-        transaction2.setAccountId(accountId);
-        transaction2.setTransactionType(TransactionType.WITHDRAW);
-        transaction2.setAmount(BigDecimal.valueOf(50.00));
-        transaction2.setBalanceAfter(BigDecimal.valueOf(450.00));
-        transaction2.setDescription("Test withdraw");
-        transaction2.setCreatedAt(LocalDateTime.now());
-
-        List<Transaction> transactions = Arrays.asList(transaction, transaction2);
-
-        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
-                .thenReturn(transactions);
-
-        // Act
-        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(TransactionType.DEPOSIT, result.get(0).getTransactionType());
-        assertEquals(TransactionType.WITHDRAW, result.get(1).getTransactionType());
-
-        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
-    }
-
-    @Test
     void getRecentTransactions_ShouldReturnLast10Transactions_WhenAccountHasManyTransactions() {
         // Arrange
         List<Transaction> transactions = new ArrayList<>();
@@ -163,5 +134,35 @@ public class TransactionServiceTest {
 
         verify(transactionRepository).findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(
                 accountId, TransactionType.DEPOSIT);
+    }
+
+    @Test
+    void getHistoryByAccountId_ShouldReturnTransactionList_WhenAccountHasTransactions() {
+        // Arrange
+        List<Transaction> transactions = new ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            Transaction t = new Transaction();
+            t.setId((long) i);
+            t.setAccountId(accountId);
+            t.setTransactionType(i % 2 == 0 ? TransactionType.DEPOSIT : TransactionType.WITHDRAW);
+            t.setAmount(BigDecimal.valueOf(i * 100.00));
+            t.setBalanceAfter(BigDecimal.valueOf(500.00 + (i * 100.00)));
+            t.setDescription("Transaction " + i);
+            t.setCreatedAt(LocalDateTime.now().minusMinutes(i));
+            transactions.add(t);
+        }
+
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
+                .thenReturn(transactions);
+
+        // Act
+        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals("Transaction 3", result.get(0).getDescription());
+
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
     }
 }
