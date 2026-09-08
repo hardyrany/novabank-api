@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users", schema = "users")
-public class UserEntity {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -54,9 +54,9 @@ public class UserEntity {
     private LocalDateTime updatedAt;
 
 
-    public UserEntity() {}
+    public User() {}
 
-    public UserEntity(UUID id, String email, String password, Boolean isActive, Set<Role> roles,
+    public User(UUID id, String email, String password, Boolean isActive, Set<Role> roles,
             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.email = email;
