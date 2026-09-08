@@ -85,18 +85,35 @@ class UserServiceTest {
     }
 
     @Test
-void createUser_ShouldThrowBusinessException_WhenEmailAlreadyExists() {
-    // Arrange
-    when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(true);
+    void createUser_ShouldThrowBusinessException_WhenEmailAlreadyExists() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(true);
 
-    // Act & Assert
-    assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
 
-    verify(userRepository).existsByEmail(userRequest.getEmail());
-    verify(userMapper, never()).toEntity(any(UserRequest.class));
-    verify(passwordEncoder, never()).encode(anyString());
-    verify(userRepository, never()).save(any(User.class));
-    verify(userMapper, never()).toResponse(any(User.class));
-}
+        verify(userRepository).existsByEmail(userRequest.getEmail());
+        verify(userMapper, never()).toEntity(any(UserRequest.class));
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void createUser_ShouldEncryptPassword_WhenSuccessful() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(false);
+        when(userMapper.toEntity(userRequest)).thenReturn(user);
+        when(passwordEncoder.encode(userRequest.getPassword())).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        // Act
+        userService.createUser(userRequest);
+
+        // Assert
+        verify(passwordEncoder).encode("admin123");
+        verify(user).setPassword(encodedPassword);
+    }
 
 }
