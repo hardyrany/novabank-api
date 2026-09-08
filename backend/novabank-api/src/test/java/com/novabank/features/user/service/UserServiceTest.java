@@ -113,7 +113,7 @@ class UserServiceTest {
 
         // Assert
         verify(passwordEncoder).encode("admin123");
-        verify(user).setPassword(encodedPassword);
+        assertEquals(encodedPassword, user.getPassword());
     }
 
 }
