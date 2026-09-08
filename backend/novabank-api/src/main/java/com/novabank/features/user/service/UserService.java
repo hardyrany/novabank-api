@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.user.dto.UserRequest;
 import com.novabank.features.user.dto.UserResponse;
+import com.novabank.features.user.entity.User;
 import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
@@ -30,6 +31,10 @@ public class UserService {
         if (userRepository.existsByEmail(userRequest.getEmail())) {
             throw new BusinessException("Email already registered: " + userRequest.getEmail());
         }
+
+        User user = userMapper.toEntity(userRequest);
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return null;
     }
