@@ -36,7 +36,9 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        return null;
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toResponse(savedUser);
     }
 
 }
