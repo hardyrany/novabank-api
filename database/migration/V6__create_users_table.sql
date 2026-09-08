@@ -23,3 +23,10 @@ CREATE TABLE IF NOT EXISTS users.user_roles (
         role IN ('ADMIN', 'USER', 'SUPPORT')
     )
 );
+
+-- Passo 1.4: Adicionar índices
+CREATE INDEX idx_users_email ON users.users (email);
+
+CREATE INDEX idx_user_roles_user_id ON users.user_roles (user_id);
+
+CREATE INDEX idx_users_created_at ON users.users (created_at);
