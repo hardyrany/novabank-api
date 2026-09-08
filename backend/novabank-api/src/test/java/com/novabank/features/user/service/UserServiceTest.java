@@ -21,6 +21,7 @@ import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -82,5 +83,20 @@ class UserServiceTest {
         verify(userRepository).save(any(User.class));
         verify(userMapper).toResponse(any(User.class));
     }
+
+    @Test
+void createUser_ShouldThrowBusinessException_WhenEmailAlreadyExists() {
+    // Arrange
+    when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(true);
+
+    // Act & Assert
+    assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
+
+    verify(userRepository).existsByEmail(userRequest.getEmail());
+    verify(userMapper, never()).toEntity(any(UserRequest.class));
+    verify(passwordEncoder, never()).encode(anyString());
+    verify(userRepository, never()).save(any(User.class));
+    verify(userMapper, never()).toResponse(any(User.class));
+}
 
 }
