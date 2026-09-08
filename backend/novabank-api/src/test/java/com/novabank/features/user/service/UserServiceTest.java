@@ -58,4 +58,29 @@ class UserServiceTest {
                 new UserResponse(user.getId(), "admin@novabank.com", true, Set.of(Role.ADMIN));
     }
 
+    @Test
+    void createUser_ShouldReturnUserResponse_WhenSuccessful() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(false);
+        when(userMapper.toEntity(userRequest)).thenReturn(user);
+        when(passwordEncoder.encode(userRequest.getPassword())).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.createUser(userRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getEmail(), result.getEmail());
+        assertEquals(userResponse.getRoles(), result.getRoles());
+        assertTrue(result.getIsActive());
+
+        verify(userRepository).existsByEmail(userRequest.getEmail());
+        verify(userMapper).toEntity(userRequest);
+        verify(passwordEncoder).encode(userRequest.getPassword());
+        verify(userRepository).save(any(User.class));
+        verify(userMapper).toResponse(any(User.class));
+    }
+
 }
