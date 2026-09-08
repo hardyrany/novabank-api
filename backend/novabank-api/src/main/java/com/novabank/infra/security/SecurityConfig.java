@@ -30,8 +30,11 @@ public class SecurityConfig {
                 .anyRequest().authenticated())
                 .formLogin(
                         form -> form.defaultSuccessUrl("/swagger-ui/index.html", true).permitAll())
-                .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll());
+                .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll())
 
+
+                .httpBasic(httpBasic -> {
+                });
         return http.build();
     }
 
