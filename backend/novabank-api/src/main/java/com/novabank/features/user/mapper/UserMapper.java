@@ -1,4 +1,4 @@
-package com.novabank.features.user;
+package com.novabank.features.user.mapper;
 
 import org.springframework.stereotype.Component;
 import com.novabank.features.user.dto.UserRequest;
@@ -18,4 +18,5 @@ public class UserMapper {
 
         return user;
     }
+
 }
