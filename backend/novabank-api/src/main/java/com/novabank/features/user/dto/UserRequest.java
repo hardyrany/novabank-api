@@ -1,5 +1,6 @@
 package com.novabank.features.user.dto;
 
+import java.util.HashSet;
 import java.util.Set;
 import com.novabank.features.user.enums.Role;
 
@@ -14,7 +15,7 @@ public class UserRequest {
     public UserRequest(String email, String password, Set<Role> roles) {
         this.email = email;
         this.password = password;
-        this.roles = roles;
+        this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
     }
 
     public String getEmail() {
@@ -34,11 +35,11 @@ public class UserRequest {
     }
 
     public Set<Role> getRoles() {
-        return roles;
+        return new HashSet<>(roles);
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
     }
 
 }
