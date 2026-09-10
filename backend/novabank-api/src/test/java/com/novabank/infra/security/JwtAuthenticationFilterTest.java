@@ -4,9 +4,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -58,6 +60,11 @@ public class JwtAuthenticationFilterTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         validToken = objectMapper.readTree(loginResponse).get("token").asText();
+    }
+
+    @Test
+    void protectedEndpoint_ShouldReturn401_WhenNoToken() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/1")).andExpect(status().isUnauthorized());
     }
 
 }
