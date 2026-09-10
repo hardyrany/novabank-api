@@ -67,4 +67,10 @@ public class JwtAuthenticationFilterTest {
         mockMvc.perform(get("/api/v1/accounts/1")).andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void protectedEndpoint_ShouldReturn200_WhenValidToken() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/1").header("Authorization", "Bearer " + validToken))
+                .andExpect(status().isOk());
+    }
+
 }
