@@ -23,7 +23,6 @@ import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
-import com.novabank.infra.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -78,6 +77,20 @@ class AuthServiceTest {
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository).findByEmail(loginRequest.getEmail());
         verify(jwtService).generateToken(user.getEmail());
+    }
+
+    @Test
+    void login_ShouldThrowBadCredentialsException_WhenCredentialsInvalid() {
+        // Arrange
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
+
+        // Act & Assert
+        assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest));
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(jwtService, never()).generateToken(anyString());
     }
 
 }
