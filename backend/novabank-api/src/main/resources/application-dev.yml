@@ -21,3 +21,7 @@ logging:
         com.novabank: DEBUG
         org.hibernate.SQL: DEBUG
         org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+jwt:
+    secret: dev-secret-key-for-development-only-1234567890
+    expiration-ms: 1800000
