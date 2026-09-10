@@ -36,7 +36,9 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getEmail());
 
-        return null;
+        String role = user.getRoles().stream().findFirst().map(Enum::name).orElse("USER");
+
+        return new LoginResponse(token, user.getEmail(), role);
 
     }
 
