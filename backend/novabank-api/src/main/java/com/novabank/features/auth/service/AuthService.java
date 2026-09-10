@@ -1,5 +1,6 @@
 package com.novabank.features.auth.service;
 
+import java.util.Comparator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.user.entity.User;
+import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
@@ -25,6 +27,7 @@ public class AuthService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest loginRequest) {
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -36,10 +39,10 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getEmail());
 
-        String role = user.getRoles().stream().findFirst().map(Enum::name).orElse("USER");
+        String role = user.getRoles().stream().min(Comparator.comparing(Enum::ordinal))
+                .map(Enum::name).orElse(Role.USER.name());
 
         return new LoginResponse(token, user.getEmail(), role);
-
     }
 
 }
