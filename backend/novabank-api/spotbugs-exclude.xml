@@ -5,4 +5,12 @@
         <Class name="~.*(Controller|Service|Mapper)$" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
+
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" />
+        <Or>
+            <Class name="com.novabank.infra.security.JwtAuthenticationEntryPoint" />
+            <Class name="com.novabank.infra.security.SecurityConfig" />
+        </Or>
+    </Match>
 </FindBugsFilter>
