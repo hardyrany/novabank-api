@@ -73,4 +73,10 @@ public class JwtAuthenticationFilterTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void protectedEndpoint_ShouldReturn401_WhenInvalidToken() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/1").header("Authorization", "Bearer token-invalido"))
+                .andExpect(status().isUnauthorized());
+    }
+
 }
