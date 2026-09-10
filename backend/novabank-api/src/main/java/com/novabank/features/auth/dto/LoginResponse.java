@@ -1,4 +1,4 @@
-package com.novabank.features.auth;
+package com.novabank.features.auth.dto;
 
 public class LoginResponse {
 
