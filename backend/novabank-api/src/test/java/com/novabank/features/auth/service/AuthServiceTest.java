@@ -23,6 +23,7 @@ import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -90,6 +91,21 @@ class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository, never()).findByEmail(anyString());
+        verify(jwtService, never()).generateToken(anyString());
+    }
+
+    @Test
+    void login_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+        // Arrange
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(null);
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> authService.login(loginRequest));
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userRepository).findByEmail(loginRequest.getEmail());
         verify(jwtService, never()).generateToken(anyString());
     }
 
