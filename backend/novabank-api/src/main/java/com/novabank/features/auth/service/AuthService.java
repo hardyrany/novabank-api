@@ -34,6 +34,8 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found with email: " + loginRequest.getEmail()));
 
+        String token = jwtService.generateToken(user.getEmail());
+
         return null;
 
     }
