@@ -1,3 +1,5 @@
+# ===== SPRING CONFIGURATION =====
+
 spring:
     application:
         name: novabank-api
@@ -29,3 +31,8 @@ management:
     endpoint:
         health:
             show-details: always
+
+# ===== JWT CONFIGURATION =====
+jwt:
+    secret: ${JWT_SECRET:your-super-secret-key-change-in-production}
+    expiration-ms: 1800000  # 30 minutes
