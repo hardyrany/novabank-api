@@ -1,8 +1,8 @@
 spring:
     datasource:
         url: jdbc:postgresql://localhost:5432/novabank_test
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
+        username: admin
+        password: admin123
         driver-class-name: org.postgresql.Driver
         hikari:
             maximum-pool-size: 2
