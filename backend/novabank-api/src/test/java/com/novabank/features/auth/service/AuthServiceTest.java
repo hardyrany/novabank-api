@@ -58,4 +58,26 @@ class AuthServiceTest {
         token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBub3ZhYmFuay5jb20ifQ.abc123";
     }
 
+    @Test
+    void login_ShouldReturnLoginResponse_WhenSuccessful() {
+        // Arrange
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(null);
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(jwtService.generateToken(user.getEmail())).thenReturn(token);
+
+        // Act
+        LoginResponse result = authService.login(loginRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(token, result.getToken());
+        assertEquals("admin@novabank.com", result.getEmail());
+        assertEquals("ADMIN", result.getRole());
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userRepository).findByEmail(loginRequest.getEmail());
+        verify(jwtService).generateToken(user.getEmail());
+    }
+
 }
