@@ -1,6 +1,7 @@
 package com.novabank.infra.security;
 
 import java.io.IOException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.novabank.features.auth.service.JwtService;
@@ -33,6 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
+
+        if (jwtService.validateToken(token)) {
+            final String email = jwtService.extractEmail(token);
+
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            }
+        }
 
         filterChain.doFilter(request, response);
     }
