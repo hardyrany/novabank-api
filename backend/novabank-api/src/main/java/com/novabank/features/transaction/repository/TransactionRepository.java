@@ -10,10 +10,10 @@ import com.novabank.features.transaction.enums.TransactionType;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    List<Transaction> findByAccountIdOrderByCreatedAtDesc(Long accountId);
+    List<Transaction> findByAccountIdOrderByCreatedAtDescIdDesc(Long accountId);
 
-    List<Transaction> findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(Long accountId,
+    List<Transaction> findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(Long accountId,
             TransactionType transactionType);
 
-    List<Transaction> findTop10ByAccountIdOrderByCreatedAtDesc(Long accountId);
+    List<Transaction> findTop10ByAccountIdOrderByCreatedAtDescIdDesc(Long accountId);
 }

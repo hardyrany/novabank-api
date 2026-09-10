@@ -89,7 +89,7 @@ public class TransactionServiceTest {
         // Ordena manualmente: do mais recente para o mais antigo
         transactions.sort((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()));
 
-        when(transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId))
+        when(transactionRepository.findTop10ByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(transactions);
 
         // Act
@@ -100,7 +100,7 @@ public class TransactionServiceTest {
         assertEquals(10, result.size());
         assertEquals("Transaction 10", result.get(0).getDescription()); // ✅ Agora passa
 
-        verify(transactionRepository).findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
+        verify(transactionRepository).findTop10ByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class TransactionServiceTest {
             deposits.add(t);
         }
 
-        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(accountId,
+        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(accountId,
                 TransactionType.DEPOSIT)).thenReturn(deposits);
 
         // Act
@@ -132,7 +132,7 @@ public class TransactionServiceTest {
         assertTrue(
                 result.stream().allMatch(t -> t.getTransactionType() == TransactionType.DEPOSIT));
 
-        verify(transactionRepository).findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(
+        verify(transactionRepository).findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
                 accountId, TransactionType.DEPOSIT);
     }
 
@@ -152,7 +152,7 @@ public class TransactionServiceTest {
             transactions.add(t);
         }
 
-        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(transactions);
 
         // Act
@@ -163,7 +163,7 @@ public class TransactionServiceTest {
         assertEquals(3, result.size());
         assertEquals("Transaction 1", result.get(0).getDescription());
 
-        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class TransactionServiceTest {
         // Arrange
         List<Transaction> emptyList = new ArrayList<>();
 
-        when(transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId))
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(emptyList);
 
         // Act
@@ -181,6 +181,6 @@ public class TransactionServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
 
-        verify(transactionRepository).findByAccountIdOrderByCreatedAtDesc(accountId);
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 }
