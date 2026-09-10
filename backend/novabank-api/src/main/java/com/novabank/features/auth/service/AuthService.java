@@ -1,8 +1,11 @@
 package com.novabank.features.auth.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.auth.dto.LoginRequest;
+import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.user.repository.UserRepository;
 
 @Service
@@ -18,6 +21,14 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+    }
+
+    public LoginResponse login(LoginRequest loginRequest) {
+
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginRequest.getEmail(), loginRequest.getPassword()));
+
+        return null;
     }
 
 }
