@@ -38,18 +38,18 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountId(Long accountId) {
-        return transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
+        return transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Transactional(readOnly = true)
     public List<Transaction> getRecentTransactions(Long accountId) {
-        return transactionRepository.findTop10ByAccountIdOrderByCreatedAtDesc(accountId);
+        return transactionRepository.findTop10ByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountIdAndType(Long accountId,
             TransactionType transactionType) {
         return transactionRepository
-                .findByAccountIdAndTransactionTypeOrderByCreatedAtDesc(accountId, transactionType);
+                .findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(accountId, transactionType);
     }
 }
