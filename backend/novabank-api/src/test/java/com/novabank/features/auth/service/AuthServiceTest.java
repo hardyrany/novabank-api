@@ -109,4 +109,24 @@ class AuthServiceTest {
         verify(jwtService, never()).generateToken(anyString());
     }
 
+    @Test
+    void login_ShouldReturnMostPrioritizedRole_WhenUserHasMultipleRoles() {
+        // Arrange
+        user.setRoles(Set.of(Role.ADMIN, Role.USER));
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(null);
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(jwtService.generateToken(user.getEmail())).thenReturn(token);
+
+        // Act
+        LoginResponse result = authService.login(loginRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("ADMIN", result.getRole());
+
+        verify(jwtService).generateToken(user.getEmail());
+    }
+
 }
