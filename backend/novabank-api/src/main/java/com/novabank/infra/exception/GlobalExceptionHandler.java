@@ -42,6 +42,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbiddenException(
+            ForbiddenException forbiddenException, WebRequest request) {
+
+        ErrorResponse errorResponse =
+                ErrorResponse.builder().message(forbiddenException.getMessage())
+                        .status(HttpStatus.FORBIDDEN.value()).error("Forbidden")
+                        .path(request.getDescription(false)).timestamp(LocalDateTime.now()).build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception exception,
             WebRequest request) {
