@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "accounts", schema = "accounts")
@@ -36,6 +37,10 @@ public class Account {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Integer version;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -108,6 +113,14 @@ public class Account {
 
     public void setActive(boolean active) {
         this.isActive = active;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     public LocalDateTime getCreatedAt() {
