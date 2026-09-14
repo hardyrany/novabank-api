@@ -2,6 +2,13 @@
 
 All notable changes to NovaBank are documented in this file.
 
+## [v0.3.1]
+
+Docs and repo hygiene fixes.
+
+- Renamed `Changelog` → `CHANGELOG.md` and `LICENCE` → `LICENSE` (correct casing/spelling)
+- Added `.env.example` to the repository
+
 ## [v0.3.0]
 
 MVP with authentication, authorization and ownership validation.
@@ -19,7 +26,6 @@ MVP with authentication, authorization and ownership validation.
 | Tags | v0.1.0, v0.2.0 | + v0.3.0 |
 | Next Steps | Phase 8 | Scalability → v1.0.0 |
 | Commands | 1 `.env` | 2 `.env` + warning note |
-
 
 ## [v0.2.0]
 
