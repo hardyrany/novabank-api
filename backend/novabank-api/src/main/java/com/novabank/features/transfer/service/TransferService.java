@@ -1,6 +1,7 @@
 package com.novabank.features.transfer.service;
 
 import java.math.BigDecimal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,15 +81,22 @@ public class TransferService {
                 amount, newTargetBalance, creditDescription);
     }
 
-    private void  validateOwnerShip(Account sourceAccount) {
-        
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    private void validateOwnerShip(Account sourceAccount) {
 
-        Customer customer = customerRepository.findByEmailIgnoreCase(email)
-        .orElseThrow(() -> new ForbiddenException("No Customer associated with authenticated user"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new ForbiddenException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+
+        Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new ForbiddenException("No Customer associated with authenticated user"));
 
         if (!sourceAccount.getCustomerId().equals(customer.getId())) {
-            throw new ForbiddenException("Account " + sourceAccount.getId() + "            does not belong to the authenticated customer");
+            throw new ForbiddenException("Account " + sourceAccount.getId()
+                    + " does not belong to the authenticated customer");
         }
     }
 
