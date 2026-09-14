@@ -14,10 +14,14 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: true
-        locations: filesystem:../database/migration
+        locations: filesystem:../../database/migration
 
 logging:
     level:
         com.novabank: DEBUG
         org.hibernate.SQL: DEBUG
         org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+jwt:
+    secret: dev-secret-key-for-development-only-1234567890
+    expiration-ms: 1800000
