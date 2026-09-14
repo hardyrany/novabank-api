@@ -1,6 +1,5 @@
 package com.novabank.integration;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -16,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.jayway.jsonpath.JsonPath;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class MVPIntegrationTest {
 
@@ -24,6 +23,7 @@ public class MVPIntegrationTest {
     private MockMvc mockMvc;
     private String testEmail;
     private String testPassword;
+    private String bearerToken;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -41,6 +41,21 @@ public class MVPIntegrationTest {
         mockMvc.perform(
                 post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isCreated());
+
+        String loginJson = """
+                {
+                    "email": "%s",
+                    "password": "%s"
+                }
+                """.formatted(testEmail, testPassword);
+
+        String loginResponse = mockMvc
+                .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.token").exists()).andReturn()
+                .getResponse().getContentAsString();
+
+        bearerToken = "Bearer " + JsonPath.read(loginResponse, "$.token");
     }
 
     @Test
@@ -53,25 +68,20 @@ public class MVPIntegrationTest {
                     "firstName": "João",
                     "middleName": "Pedro",
                     "lastName": "Silva",
-                    "email": "joao.silva.%d@email.com",
+                    "email": "%s",
                     "phone": "+351912345678",
                     "documentNumber": "%s",
                     "documentType": "NATIONAL_ID",
                     "birthDate": "1990-01-01",
                     "address": "Rua Principal 123, Praia, Cabo Verde"
                 }
-                """.formatted(System.currentTimeMillis(), uniqueDocument);
+                """.formatted(testEmail, uniqueDocument);
 
         String customerResponse = mockMvc
-                .perform(post("/api/v1/customers")
-                        .with(httpBasic(testEmail, testPassword))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(customerJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .perform(post("/api/v1/customers").header("Authorization", bearerToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(customerJson))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists()).andReturn()
+                .getResponse().getContentAsString();
 
         Long customerId = ((Number) JsonPath.read(customerResponse, "$.id")).longValue();
 
@@ -86,15 +96,10 @@ public class MVPIntegrationTest {
                 """.formatted(customerId, System.currentTimeMillis());
 
         String accountResponse = mockMvc
-                .perform(post("/api/v1/accounts")
-                        .with(httpBasic(testEmail, testPassword))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(accountJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .perform(post("/api/v1/accounts").header("Authorization", bearerToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(accountJson))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists()).andReturn()
+                .getResponse().getContentAsString();
 
         Long accountId = extractId(accountResponse);
 
@@ -106,10 +111,8 @@ public class MVPIntegrationTest {
                 """;
 
         mockMvc.perform(post("/api/v1/accounts/%d/deposit".formatted(accountId))
-                        .with(httpBasic(testEmail, testPassword))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(depositJson))
-                .andExpect(status().isOk())
+                .header("Authorization", bearerToken).contentType(MediaType.APPLICATION_JSON)
+                .content(depositJson)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(1500.00));
 
         String account2Json = """
@@ -123,15 +126,10 @@ public class MVPIntegrationTest {
                 """.formatted(customerId, System.currentTimeMillis() + 1);
 
         String account2Response = mockMvc
-                .perform(post("/api/v1/accounts")
-                        .with(httpBasic(testEmail, testPassword))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(account2Json))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .perform(post("/api/v1/accounts").header("Authorization", bearerToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(account2Json))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists()).andReturn()
+                .getResponse().getContentAsString();
 
         Long account2Id = extractId(account2Response);
 
@@ -144,32 +142,26 @@ public class MVPIntegrationTest {
                 }
                 """.formatted(accountId, account2Id);
 
-        mockMvc.perform(post("/api/v1/transfers")
-                        .with(httpBasic(testEmail, testPassword))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(transferJson))
+        mockMvc.perform(post("/api/v1/transfers").header("Authorization", bearerToken)
+                .contentType(MediaType.APPLICATION_JSON).content(transferJson))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/v1/accounts/%d/balance".formatted(accountId))
-                        .with(httpBasic(testEmail, testPassword)))
-                .andExpect(status().isOk())
+                .header("Authorization", bearerToken)).andExpect(status().isOk())
                 .andExpect(content().string("1300.00"));
 
         mockMvc.perform(get("/api/v1/accounts/%d/balance".formatted(account2Id))
-                        .with(httpBasic(testEmail, testPassword)))
-                .andExpect(status().isOk())
+                .header("Authorization", bearerToken)).andExpect(status().isOk())
                 .andExpect(content().string("200.00"));
 
         mockMvc.perform(get("/api/v1/accounts/%d/transactions".formatted(accountId))
-                        .with(httpBasic(testEmail, testPassword)))
-                .andExpect(status().isOk())
+                .header("Authorization", bearerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_OUT"))
                 .andExpect(jsonPath("$[1].transactionType").value("DEPOSIT"));
 
         mockMvc.perform(get("/api/v1/accounts/%d/transactions".formatted(account2Id))
-                        .with(httpBasic(testEmail, testPassword)))
-                .andExpect(status().isOk())
+                .header("Authorization", bearerToken)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_IN"));
     }
