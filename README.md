@@ -2,9 +2,9 @@
 
 **NovaBank** is a banking system built with Java and Spring Boot, following a modular monolithic architecture organized by features. This project demonstrates the application of Clean Architecture principles, Domain-Driven Design, and good development practices for a functional MVP.
 
-## 📊 Project Status
+## Project Status
 
-**Current Version:** `v0.3.1`
+**Current Version:** `v0.3.2`
 
 **Phase:** Functionally Complete MVP (Phase 8 — Authentication + Authorization)
 
@@ -27,7 +27,7 @@
 
 ---
 
-## 🚀 Technologies
+## Technologies
 
 | Technology | Version |
 |---|---|
@@ -55,7 +55,7 @@
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 novabank/
@@ -124,7 +124,7 @@ novabank/
 
 ---
 
-## 🛠️ How to Run the Project
+## How to Run the Project
 
 ### Prerequisites
 
@@ -156,7 +156,7 @@ cd backend/novabank-api
 ./mvnw test
 ```
 
-⚠️ Two `.env` files are required:
+Two `.env` files are required:
 
 - `novabank/.env` — read by `docker-compose.yml`
 - `novabank/backend/novabank-api/.env` — read by Spring Boot via `springboot4-dotenv`
@@ -165,7 +165,7 @@ Both must have the same database credentials.
 
 ---
 
-## 📋 Available Endpoints (v0.3.0)
+## Available Endpoints (v0.3.0)
 
 ### Auth
 
@@ -218,7 +218,7 @@ Both must have the same database credentials.
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 The API uses JWT (JSON Web Token) for authentication.
 
@@ -240,7 +240,7 @@ curl -X POST http://localhost:8080/api/v1/users \
 
 Then log in with the same credentials to obtain a JWT for the protected endpoints (see the login example below).
 
-> ⚠️ Field names (`name`, `role`, etc.) should match the actual `UserRequestDTO` — adjust if the fields differ.
+> Field names (`name`, `role`, etc.) should match the actual `UserRequestDTO` — adjust if the fields differ.
 
 ### Example
 
@@ -269,7 +269,7 @@ curl http://localhost:8080/api/v1/accounts/1 \
 
 ---
 
-## 📦 Flyway Migrations
+## Flyway Migrations
 
 | Migration | Description |
 |---|---|
@@ -283,7 +283,7 @@ curl http://localhost:8080/api/v1/accounts/1 \
 
 ---
 
-## 🧪 Tests
+## Tests
 
 ### Test Coverage
 
@@ -328,7 +328,7 @@ export NVD_API_KEY=your-nvd-api-key
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
 Interactive API documentation is available at:
 
@@ -339,7 +339,7 @@ Use the **Authorize** button in Swagger UI to provide your JWT token and test pr
 
 ---
 
-## 🏷️ Release Tags
+## Release Tags
 
 | Tag | Description |
 |---|---|
@@ -347,12 +347,13 @@ Use the **Authorize** button in Swagger UI to provide your JWT token and test pr
 | v0.2.0 | Functionally complete MVP — deposit, withdraw, history, transfer |
 | v0.3.0 | MVP with authentication, authorization and ownership validation |
 | v0.3.1 | Docs and repo hygiene — CHANGELOG/LICENSE naming fixes, `.env.example` added |
+| v0.3.2 | Docs — how to create the first Admin user |
 
 See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
 
 ---
 
-## 📌 Next Steps
+## Next Steps
 
 | Phase | Description |
 |---|---|
@@ -362,6 +363,6 @@ See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License — see [LICENSE](./LICENSE) for details.
