@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
+import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
@@ -16,10 +17,13 @@ public class TransferService {
 
     private final AccountService accountService;
     private final TransactionService transactionService;
+    private final CustomerRepository customerRepository;
 
-    public TransferService(AccountService accountService, TransactionService transactionService) {
+    public TransferService(AccountService accountService, TransactionService transactionService,
+            CustomerRepository customerRepository) {
         this.accountService = accountService;
         this.transactionService = transactionService;
+        this.customerRepository = customerRepository;
     }
 
     public void transfer(Long sourceAccountId, Long targetAccountId, BigDecimal amount,
