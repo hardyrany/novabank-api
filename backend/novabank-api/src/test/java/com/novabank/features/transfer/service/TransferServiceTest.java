@@ -5,19 +5,27 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
+import com.novabank.features.customer.entity.Customer;
+import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ConflictException;
+import com.novabank.infra.exception.ForbiddenException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +37,9 @@ public class TransferServiceTest {
     @Mock
     private TransactionService transactionService;
 
+    @Mock
+    private CustomerRepository customerRepository;
+
     @InjectMocks
     private TransferService transferService;
 
@@ -38,6 +49,9 @@ public class TransferServiceTest {
     private Long targetAccountId;
     private BigDecimal amount;
     private String description;
+    private Customer customer;
+
+    private static final String AUTHENTICATED_EMAIL = "test@novabank.com";
 
     @BeforeEach
     void setUp() {
@@ -46,13 +60,27 @@ public class TransferServiceTest {
         amount = BigDecimal.valueOf(100.00);
         description = "Test transfer";
 
+        customer = new Customer();
+        customer.setId(1L);
+        customer.setEmail(AUTHENTICATED_EMAIL);
+
         sourceAccount = new Account();
         sourceAccount.setId(sourceAccountId);
+        sourceAccount.setCustomerId(1L);
         sourceAccount.setBalance(BigDecimal.valueOf(500.00));
 
         targetAccount = new Account();
         targetAccount.setId(targetAccountId);
+        targetAccount.setCustomerId(2L);
         targetAccount.setBalance(BigDecimal.valueOf(200.00));
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(AUTHENTICATED_EMAIL, null));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -63,6 +91,8 @@ public class TransferServiceTest {
 
         when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
         when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+        when(customerRepository.findByEmailIgnoreCase(AUTHENTICATED_EMAIL))
+                .thenReturn(Optional.of(customer));
         when(accountService.updateAccount(eq(sourceAccountId), any(Account.class)))
                 .thenReturn(sourceAccount);
         when(accountService.updateAccount(eq(targetAccountId), any(Account.class)))
@@ -74,7 +104,6 @@ public class TransferServiceTest {
         // Assert
         verify(accountService).getAccountById(sourceAccountId);
         verify(accountService).getAccountById(targetAccountId);
-
         verify(accountService).updateAccount(eq(sourceAccountId), any(Account.class));
         verify(accountService).updateAccount(eq(targetAccountId), any(Account.class));
 
@@ -89,20 +118,13 @@ public class TransferServiceTest {
 
     @Test
     void transfer_ShouldThrowBusinessException_WhenAmountIsInvalid() {
-        // Arrange
-        Long sourceAccountId = 1L;
-        Long targetAccountId = 2L;
-        String description = "Test transfer";
-
         // Act & Assert
         assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, null, description));
 
-        // Act & Assert
         assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, BigDecimal.ZERO, description));
 
-        // Act & Assert
         assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, BigDecimal.valueOf(-100.00), description));
 
@@ -114,12 +136,9 @@ public class TransferServiceTest {
 
     @Test
     void transfer_ShouldThrowBusinessException_WhenSourceAndTargetAccountsAreSame() {
-        // Arrange
-        Long sameAccountId = 1L;
-
         // Act & Assert
-        assertThrows(BusinessException.class,
-                () -> transferService.transfer(sameAccountId, sameAccountId, amount, description));
+        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+                sourceAccountId, amount, description));
 
         verify(accountService, never()).getAccountById(anyLong());
         verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
@@ -162,15 +181,17 @@ public class TransferServiceTest {
     }
 
     @Test
-    void transfer_ShouldThrowBusinessException_WhenInsufficientBalance() {
+    void transfer_ShouldThrowConflictException_WhenInsufficientBalance() {
         // Arrange
         BigDecimal transferAmount = BigDecimal.valueOf(600.00);
 
         when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
         when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+        when(customerRepository.findByEmailIgnoreCase(AUTHENTICATED_EMAIL))
+                .thenReturn(Optional.of(customer));
 
         // Act & Assert
-        assertThrows(BusinessException.class, () -> transferService.transfer(sourceAccountId,
+        assertThrows(ConflictException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, transferAmount, description));
 
         verify(accountService).getAccountById(sourceAccountId);
@@ -180,4 +201,39 @@ public class TransferServiceTest {
                 any());
     }
 
+    @Test
+    void transfer_ShouldThrowForbiddenException_WhenSourceAccountDoesNotBelongToCustomer() {
+        // Arrange
+        sourceAccount.setCustomerId(999L); // não pertence ao customer autenticado
+
+        when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
+        when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+        when(customerRepository.findByEmailIgnoreCase(AUTHENTICATED_EMAIL))
+                .thenReturn(Optional.of(customer));
+
+        // Act & Assert
+        assertThrows(ForbiddenException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, amount, description));
+
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
+
+    @Test
+    void transfer_ShouldThrowForbiddenException_WhenNoCustomerFoundForAuthenticatedUser() {
+        // Arrange
+        when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
+        when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
+        when(customerRepository.findByEmailIgnoreCase(AUTHENTICATED_EMAIL))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ForbiddenException.class, () -> transferService.transfer(sourceAccountId,
+                targetAccountId, amount, description));
+
+        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(transactionService, never()).transactionRecordEntry(anyLong(), any(), any(), any(),
+                any());
+    }
 }
