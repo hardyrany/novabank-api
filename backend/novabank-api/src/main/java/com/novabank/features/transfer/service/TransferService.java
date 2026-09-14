@@ -43,6 +43,8 @@ public class TransferService {
         Account sourceAccount = accountService.getAccountById(sourceAccountId);
         Account targetAccount = accountService.getAccountById(targetAccountId);
 
+        validateOwnerShip(sourceAccount);
+
         if (!sourceAccount.isActive()) {
             throw new BusinessException("Source account is not active");
         }
@@ -78,7 +80,7 @@ public class TransferService {
                 amount, newTargetBalance, creditDescription);
     }
 
-    private void  validateownerShip(Account sourceAccount) {
+    private void  validateOwnerShip(Account sourceAccount) {
         
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
