@@ -2,6 +2,12 @@
 
 All notable changes to NovaBank are documented in this file.
 
+## [v0.3.2]
+
+Docs: document how to create the first Admin user.
+
+- Added "Creating an Admin User" section under Authentication in the README, with a curl example for `POST /api/v1/users` using `"role":"ADMIN"`
+
 ## [v0.3.1]
 
 Docs and repo hygiene fixes.
