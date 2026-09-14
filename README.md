@@ -4,7 +4,7 @@
 
 ## 📊 Project Status
 
-**Current Version:** `v0.3.0`
+**Current Version:** `v0.3.1`
 
 **Phase:** Functionally Complete MVP (Phase 8 — Authentication + Authorization)
 
@@ -228,6 +228,20 @@ The API uses JWT (JSON Web Token) for authentication.
 2. Login: `POST /api/v1/auth/login` → returns JWT token
 3. Use the token in subsequent requests: `Authorization: Bearer <token>`
 
+### Creating an Admin User
+
+`POST /api/v1/users` is public, so the first ADMIN user can be created directly by passing `"role":"ADMIN"` in the request body:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@novabank.com","password":"password","role":"ADMIN"}'
+```
+
+Then log in with the same credentials to obtain a JWT for the protected endpoints (see the login example below).
+
+> ⚠️ Field names (`name`, `role`, etc.) should match the actual `UserRequestDTO` — adjust if the fields differ.
+
 ### Example
 
 ```bash
@@ -332,6 +346,7 @@ Use the **Authorize** button in Swagger UI to provide your JWT token and test pr
 | v0.1.0 | Partial MVP — customer-create, account-create, account-view, transaction-ledger |
 | v0.2.0 | Functionally complete MVP — deposit, withdraw, history, transfer |
 | v0.3.0 | MVP with authentication, authorization and ownership validation |
+| v0.3.1 | Docs and repo hygiene — CHANGELOG/LICENSE naming fixes, `.env.example` added |
 
 See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
 
