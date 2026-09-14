@@ -8,6 +8,7 @@ import com.novabank.features.account.service.AccountService;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ConflictException;
 
 @Service
 @Transactional
@@ -35,8 +36,16 @@ public class TransferService {
         Account sourceAccount = accountService.getAccountById(sourceAccountId);
         Account targetAccount = accountService.getAccountById(targetAccountId);
 
+        if (!sourceAccount.isActive()) {
+            throw new BusinessException("Source account is not active");
+        }
+
+        if (!targetAccount.isActive()) {
+            throw new BusinessException("Target account is not active");
+        }
+
         if (sourceAccount.getBalance().compareTo(amount) < 0) {
-            throw new BusinessException("Insufficient balance for transfer");
+            throw new ConflictException("Insufficient balance for transfer");
         }
 
         BigDecimal newSourceBalance = sourceAccount.getBalance().subtract(amount);
