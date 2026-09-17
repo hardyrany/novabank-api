@@ -1,9 +1,10 @@
 package com.novabank.infra.exception;
 
 import java.time.LocalDateTime;
-
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -64,6 +65,21 @@ public class GlobalExceptionHandler {
                         .path(request.getDescription(false)).timestamp(LocalDateTime.now()).build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(
+            MethodArgumentNotValidException validationException, WebRequest request) {
+
+        String message = validationException.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        ErrorResponse response = ErrorResponse.builder().message(message)
+                .status(HttpStatus.BAD_REQUEST.value()).error("Validation Error")
+                .path(request.getDescription(false)).timestamp(LocalDateTime.now()).build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
