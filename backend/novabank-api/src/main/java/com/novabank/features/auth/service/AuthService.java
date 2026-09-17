@@ -3,6 +3,7 @@ package com.novabank.features.auth.service;
 import java.util.Comparator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.auth.dto.LoginRequest;
@@ -19,12 +20,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(AuthenticationManager authenticationManager, JwtService jwtService,
-            UserRepository userRepository) {
+            UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
