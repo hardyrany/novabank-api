@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
+import com.novabank.features.auth.dto.RegisterRequest;
+import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
@@ -48,4 +50,8 @@ public class AuthService {
         return new LoginResponse(token, user.getEmail(), role);
     }
 
+    @Transactional
+    public RegisterResponse register(RegisterRequest registerRequest) {
+        return null;
+    }
 }
