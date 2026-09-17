@@ -51,4 +51,26 @@ class AdminBootstrapRunnerTest {
         verify(userRepository, never()).save(any(User.class));
         verify(passwordEncoder, never()).encode(any());
     }
+
+    @Test
+    void run_ShouldSkip_WhenAdminEmailIsBlank() throws Exception {
+        ReflectionTestUtils.setField(runner, "adminEmail", "");
+        ReflectionTestUtils.setField(runner, "adminPassword", "testPassword123");
+
+        runner.run(null);
+
+        verify(userRepository, never()).existsByEmail(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void run_ShouldSkip_WhenAdminPasswordIsBlank() throws Exception {
+        ReflectionTestUtils.setField(runner, "adminEmail", "admin@test.com");
+        ReflectionTestUtils.setField(runner, "adminPassword", "");
+
+        runner.run(null);
+
+        verify(userRepository, never()).existsByEmail(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
 }
