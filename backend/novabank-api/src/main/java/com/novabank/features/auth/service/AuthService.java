@@ -1,6 +1,7 @@
 package com.novabank.features.auth.service;
 
 import java.util.Comparator;
+import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,7 @@ import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
 @Service
@@ -52,6 +54,19 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest registerRequest) {
-        return null;
+
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new ConflictException("Email already registered: " + registerRequest.getEmail());
+        }
+
+        User user = new User();
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setRoles(Set.of(Role.USER));
+        user.setIsActive(true);
+
+        User savedUser = userRepository.save(user);
+
+        return new RegisterResponse(savedUser.getEmail(), Role.USER.name());
     }
 }
