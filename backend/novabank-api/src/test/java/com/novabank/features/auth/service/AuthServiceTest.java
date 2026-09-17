@@ -173,4 +173,27 @@ class AuthServiceTest {
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    void register_ShouldNotExposePasswordInResponse() {
+        // Arrange
+        RegisterRequest request = new RegisterRequest("newuser@novabank.com", "password123");
+
+        when(userRepository.existsByEmail("newuser@novabank.com")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("$2b$12$hashedPassword");
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        RegisterResponse result = authService.register(request);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("newuser@novabank.com", result.getEmail());
+        assertEquals("USER", result.getRole());
+
+        // The response class must NOT have a password field
+        assertThrows(NoSuchMethodException.class,
+                () -> RegisterResponse.class.getMethod("getPassword"));
+    }
 }
