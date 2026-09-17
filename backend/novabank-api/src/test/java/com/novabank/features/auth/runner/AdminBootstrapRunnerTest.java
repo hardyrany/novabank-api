@@ -41,4 +41,14 @@ class AdminBootstrapRunnerTest {
         verify(userRepository, times(1)).save(any(User.class));
         verify(passwordEncoder, times(1)).encode("testPassword123");
     }
+
+    @Test
+    void run_ShouldSkip_WhenAdminAlreadyExists() throws Exception {
+        when(userRepository.existsByEmail("admin@test.com")).thenReturn(true);
+
+        runner.run(null);
+
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(any());
+    }
 }
