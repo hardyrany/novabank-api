@@ -1,4 +1,4 @@
-package com.novabank.features.auth;
+package com.novabank.features.auth.runner;
 
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
