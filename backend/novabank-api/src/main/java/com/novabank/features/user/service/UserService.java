@@ -15,6 +15,7 @@ import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @Service
 @Transactional
@@ -67,6 +68,9 @@ public class UserService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication == null) {
+            throw new UnauthorizedException("No authenticated user found");
+        }
         String email = authentication.getName();
 
         return null;
