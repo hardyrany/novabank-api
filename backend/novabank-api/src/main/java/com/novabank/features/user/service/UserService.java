@@ -73,6 +73,9 @@ public class UserService {
         }
         String email = authentication.getName();
 
-        return null;
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new ResourceNotFoundException("User not found with email: " + email));
+
+        return userMapper.toResponse(user);
     }
 }
