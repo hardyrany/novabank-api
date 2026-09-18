@@ -173,4 +173,34 @@ class UserServiceTest {
         verify(userMapper, never()).toResponse(any(User.class));
     }
 
+    @Test
+    void getAllUsers_ShouldReturnMappedList_WhenUsersExist() {
+        // Arrange
+        User secondUser = new User();
+        secondUser.setId(UUID.randomUUID());
+        secondUser.setEmail("support@novabank.com");
+        secondUser.setIsActive(true);
+        secondUser.setRoles(Set.of(Role.SUPPORT));
+
+        UserResponse secondResponse = new UserResponse(secondUser.getId(), "support@novabank.com",
+                true, Set.of(Role.SUPPORT));
+
+        when(userRepository.findAll()).thenReturn(List.of(user, secondUser));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+        when(userMapper.toResponse(secondUser)).thenReturn(secondResponse);
+
+        // Act
+        List<UserResponse> result = userService.getAllUsers();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(userResponse.getEmail(), result.get(0).getEmail());
+        assertEquals(secondResponse.getEmail(), result.get(1).getEmail());
+
+        verify(userRepository).findAll();
+        verify(userMapper).toResponse(user);
+        verify(userMapper).toResponse(secondUser);
+    }
+
 }
