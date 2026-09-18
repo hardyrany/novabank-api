@@ -238,4 +238,19 @@ class UserServiceTest {
         verify(userMapper, never()).toResponse(any(User.class));
     }
 
+    @Test
+    void getAuthenticatedUser_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+        // Arrange
+        String email = "ghost@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.getAuthenticatedUser());
+
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
 }
