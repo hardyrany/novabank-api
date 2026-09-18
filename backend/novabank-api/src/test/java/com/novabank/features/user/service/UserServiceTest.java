@@ -27,6 +27,7 @@ import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -224,6 +225,17 @@ class UserServiceTest {
 
         verify(userRepository).findByEmailIgnoreCase(email);
         verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    void getAuthenticatedUser_ShouldThrowUnauthorizedException_WhenNotAuthenticated() {
+        // Arrange — SecurityContextHolder vazio (sem autenticação)
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> userService.getAuthenticatedUser());
+
+        verify(userRepository, never()).findByEmailIgnoreCase(anyString());
+        verify(userMapper, never()).toResponse(any(User.class));
     }
 
 }
