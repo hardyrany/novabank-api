@@ -6,13 +6,14 @@ import static org.mockito.Mockito.*;
 
 import java.util.Set;
 import java.util.UUID;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.novabank.features.user.dto.UserRequest;
@@ -57,6 +58,11 @@ class UserServiceTest {
         encodedPassword = "$2b$12$encodedPasswordHash";
         userResponse =
                 new UserResponse(user.getId(), "admin@novabank.com", true, Set.of(Role.ADMIN));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
