@@ -3,6 +3,8 @@ package com.novabank.features.user.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -152,6 +154,22 @@ class UserServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(id));
 
         verify(userRepository).findById(id);
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void getAllUsers_ShouldReturnEmptyList_WhenNoUsersExist() {
+        // Arrange
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        List<UserResponse> result = userService.getAllUsers();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(userRepository).findAll();
         verify(userMapper, never()).toResponse(any(User.class));
     }
 
