@@ -23,6 +23,7 @@ import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -139,6 +140,19 @@ class UserServiceTest {
 
         verify(userRepository).findById(id);
         verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    void getUserById_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(id));
+
+        verify(userRepository).findById(id);
+        verify(userMapper, never()).toResponse(any(User.class));
     }
 
 }
