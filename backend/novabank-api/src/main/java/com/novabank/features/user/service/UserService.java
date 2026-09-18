@@ -1,5 +1,6 @@
 package com.novabank.features.user.service;
 
+import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import com.novabank.features.user.entity.User;
 import com.novabank.features.user.mapper.UserMapper;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
 
 @Service
 @Transactional
@@ -39,6 +41,15 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         return userMapper.toResponse(savedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(UUID id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        return userMapper.toResponse(user);
     }
 
 }
