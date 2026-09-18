@@ -3,7 +3,7 @@ package com.novabank.features.user.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -120,6 +120,25 @@ class UserServiceTest {
         // Assert
         verify(passwordEncoder).encode("admin123");
         assertEquals(encodedPassword, user.getPassword());
+    }
+
+    @Test
+    void getUserById_ShouldReturnUserResponse_WhenUserExists() {
+        // Arrange
+        UUID id = user.getId();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.getUserById(id);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getId(), result.getId());
+        assertEquals(userResponse.getEmail(), result.getEmail());
+
+        verify(userRepository).findById(id);
+        verify(userMapper).toResponse(user);
     }
 
 }
