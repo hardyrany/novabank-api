@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -201,6 +202,28 @@ class UserServiceTest {
         verify(userRepository).findAll();
         verify(userMapper).toResponse(user);
         verify(userMapper).toResponse(secondUser);
+    }
+
+    @Test
+    void getAuthenticatedUser_ShouldReturnUserResponse_WhenAuthenticated() {
+        // Arrange
+        String email = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.getAuthenticatedUser();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getEmail(), result.getEmail());
+        assertEquals(userResponse.getRoles(), result.getRoles());
+
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userMapper).toResponse(user);
     }
 
 }
