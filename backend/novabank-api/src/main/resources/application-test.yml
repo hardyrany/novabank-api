@@ -26,3 +26,6 @@ logging:
 jwt:
     secret: test-secret-key-for-testing-only-1234567890
     expiration-ms: 1800000
+
+ADMIN_EMAIL: admin@novabank.local
+ADMIN_PASSWORD: TestAdminPass123!
