@@ -2,17 +2,21 @@ package com.novabank.integration;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.jayway.jsonpath.JsonPath;
+import com.novabank.features.user.entity.User;
+import com.novabank.features.user.enums.Role;
+import com.novabank.features.user.repository.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -21,15 +25,41 @@ public class MVPIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private String testEmail;
     private String testPassword;
     private String bearerToken;
 
     @BeforeEach
     void setUp() throws Exception {
+        seedAdminIfMissing();
+
         testEmail = "test" + System.currentTimeMillis() + "@novabank.com";
         testPassword = "test123";
 
+        // 1. Login as seeded admin to get token
+        String adminLoginJson = """
+                {
+                    "email": "admin@novabank.local",
+                    "password": "TestAdminPass123!"
+                }
+                """;
+
+        String adminLoginResponse = mockMvc
+                .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(adminLoginJson))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.token").exists()).andReturn()
+                .getResponse().getContentAsString();
+
+        String adminToken = "Bearer " + JsonPath.read(adminLoginResponse, "$.token");
+
+        // 2. Create test user (ADMIN-only endpoint)
         String userJson = """
                 {
                     "email": "%s",
@@ -38,10 +68,11 @@ public class MVPIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-        mockMvc.perform(
-                post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content(userJson))
+        mockMvc.perform(post("/api/v1/users").header("Authorization", adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isCreated());
 
+        // 3. Login as the new test user
         String loginJson = """
                 {
                     "email": "%s",
@@ -56,6 +87,24 @@ public class MVPIntegrationTest {
                 .getResponse().getContentAsString();
 
         bearerToken = "Bearer " + JsonPath.read(loginResponse, "$.token");
+    }
+
+    private void seedAdminIfMissing() {
+        userRepository.findByEmail("admin@novabank.local").ifPresentOrElse(admin -> {
+
+            admin.setPassword(passwordEncoder.encode("TestAdminPass123!"));
+            admin.setRoles(Set.of(Role.ADMIN));
+            admin.setIsActive(true);
+            userRepository.save(admin);
+        }, () -> {
+
+            User admin = new User();
+            admin.setEmail("admin@novabank.local");
+            admin.setPassword(passwordEncoder.encode("TestAdminPass123!"));
+            admin.setRoles(Set.of(Role.ADMIN));
+            admin.setIsActive(true);
+            userRepository.save(admin);
+        });
     }
 
     @Test

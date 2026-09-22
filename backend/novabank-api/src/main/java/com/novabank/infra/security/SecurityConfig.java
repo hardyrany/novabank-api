@@ -2,7 +2,6 @@ package com.novabank.infra.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -34,8 +33,6 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                         "/webjars/**")
                 .permitAll()
-
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
 
                 .requestMatchers("/api/v1/auth/**").permitAll()
 
