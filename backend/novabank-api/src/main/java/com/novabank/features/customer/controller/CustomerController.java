@@ -70,6 +70,7 @@ public class CustomerController {
     }
 
     @GetMapping("/document/{documentNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
             @PathVariable String documentNumber) {
 
