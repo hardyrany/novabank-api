@@ -61,6 +61,7 @@ public class CustomerController {
     }
 
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerByEmail(@PathVariable String email) {
 
         Customer customer = customerService.getCustomerByEmail(email);
