@@ -111,18 +111,18 @@ public class JwtAuthenticationFilterTest {
 
     @Test
     void protectedEndpoint_ShouldReturn401_WhenNoToken() throws Exception {
-        mockMvc.perform(get("/api/v1/accounts/1")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/users/me")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void protectedEndpoint_ShouldReturn200_WhenValidToken() throws Exception {
-        mockMvc.perform(get("/api/v1/accounts/1").header("Authorization", "Bearer " + validToken))
+        mockMvc.perform(get("/api/v1/users/me").header("Authorization", "Bearer " + validToken))
                 .andExpect(status().isOk());
     }
 
     @Test
     void protectedEndpoint_ShouldReturn401_WhenInvalidToken() throws Exception {
-        mockMvc.perform(get("/api/v1/accounts/1").header("Authorization", "Bearer token-invalido"))
+        mockMvc.perform(get("/api/v1//users/me").header("Authorization", "Bearer token-invalido"))
                 .andExpect(status().isUnauthorized());
     }
 
