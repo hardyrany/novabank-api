@@ -144,6 +144,7 @@ public class AccountController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> activateAccount(@PathVariable Long id) {
 
         accountService.activateAccount(id);
