@@ -91,6 +91,7 @@ public class CustomerController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<CustomerResponse>> searchCustomersByName(@RequestParam String name) {
 
         List<Customer> customers = customerService.searchCustomersByName(name);
