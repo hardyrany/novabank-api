@@ -80,6 +80,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
 
         List<Customer> customers = customerService.getAllCustomers();
