@@ -70,6 +70,7 @@ public class AccountController {
     }
 
     @GetMapping("/account-number/{accountNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> getAccountByAccountNumber(
             @PathVariable String accountNumber) {
 
