@@ -52,6 +52,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
 
         Customer customer = customerService.getCustomerById(id);
