@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +39,7 @@ public class CustomerController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> createCustomer(
             @Valid @RequestBody CustomerRequest request) {
 
@@ -50,6 +52,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
 
         Customer customer = customerService.getCustomerById(id);
@@ -58,6 +61,7 @@ public class CustomerController {
     }
 
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerByEmail(@PathVariable String email) {
 
         Customer customer = customerService.getCustomerByEmail(email);
@@ -66,6 +70,7 @@ public class CustomerController {
     }
 
     @GetMapping("/document/{documentNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
             @PathVariable String documentNumber) {
 
@@ -75,6 +80,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
 
         List<Customer> customers = customerService.getAllCustomers();
@@ -85,6 +91,7 @@ public class CustomerController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<CustomerResponse>> searchCustomersByName(@RequestParam String name) {
 
         List<Customer> customers = customerService.searchCustomersByName(name);
@@ -95,6 +102,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
             @Valid @RequestBody CustomerRequest request) {
 
@@ -113,6 +121,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> deactivateCustomer(@PathVariable Long id) {
 
         customerService.deleteCustomer(id);
@@ -121,6 +130,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> activateCustomer(@PathVariable Long id) {
 
         customerService.activateCustomer(id);

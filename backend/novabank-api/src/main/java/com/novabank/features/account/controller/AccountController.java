@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,6 +48,7 @@ public class AccountController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> createAccount(
             @RequestBody AccountRequest accountRequest) {
 
@@ -68,6 +70,7 @@ public class AccountController {
     }
 
     @GetMapping("/account-number/{accountNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> getAccountByAccountNumber(
             @PathVariable String accountNumber) {
 
@@ -90,6 +93,7 @@ public class AccountController {
     }
 
     @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<AccountResponse>> getActiveAccounts() {
 
         List<Account> accounts = accountService.getActiveAccounts();
@@ -118,6 +122,7 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id,
             @RequestBody AccountRequest accountRequest) {
 
@@ -129,6 +134,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> deactivateAccount(@PathVariable Long id) {
 
         accountService.deactivateAccount(id);
@@ -138,6 +144,7 @@ public class AccountController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> activateAccount(@PathVariable Long id) {
 
         accountService.activateAccount(id);
