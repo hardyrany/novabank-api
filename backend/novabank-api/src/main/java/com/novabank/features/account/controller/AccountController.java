@@ -134,6 +134,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> deactivateAccount(@PathVariable Long id) {
 
         accountService.deactivateAccount(id);
