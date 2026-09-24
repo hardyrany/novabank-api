@@ -102,6 +102,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
             @Valid @RequestBody CustomerRequest request) {
 
