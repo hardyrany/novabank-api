@@ -122,6 +122,7 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id,
             @RequestBody AccountRequest accountRequest) {
 
