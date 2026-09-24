@@ -130,6 +130,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> activateCustomer(@PathVariable Long id) {
 
         customerService.activateCustomer(id);
