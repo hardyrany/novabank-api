@@ -1,7 +1,6 @@
 package com.novabank.features.auth.service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
