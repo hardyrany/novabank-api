@@ -93,6 +93,7 @@ public class AccountController {
     }
 
     @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<List<AccountResponse>> getActiveAccounts() {
 
         List<Account> accounts = accountService.getActiveAccounts();
