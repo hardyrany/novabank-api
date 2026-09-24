@@ -121,6 +121,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
     public ResponseEntity<Void> deactivateCustomer(@PathVariable Long id) {
 
         customerService.deleteCustomer(id);
