@@ -18,7 +18,7 @@ public class OwnershipValidator {
     }
 
     public void validateAccountOwnership(Account account) {
-        if (hasPrivilegeRole()) {
+        if (hasPrivilegedRole()) {
             return;
         }
 
@@ -31,7 +31,7 @@ public class OwnershipValidator {
         String email = authentication.getName();
 
         Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
-                () -> new ForbiddenException("No customer associeted with authenticated user"));
+                () -> new ForbiddenException("No customer associated with authenticated user"));
 
         if (!account.getCustomerId().equals(customer.getId())) {
             throw new ForbiddenException("Account " + account.getId()
@@ -39,7 +39,7 @@ public class OwnershipValidator {
         }
     }
 
-    private boolean hasPrivilegeRole() {
+    private boolean hasPrivilegedRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
