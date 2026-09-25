@@ -4,6 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import com.novabank.features.account.entity.Account;
+import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.infra.exception.ForbiddenException;
 
@@ -26,6 +27,11 @@ public class OwnershipValidator {
         if (authentication == null) {
             throw new ForbiddenException("No authenticated user found");
         }
+
+        String email = authentication.getName();
+
+        Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new ForbiddenException("No customer associeted with authenticated user"));
 
     }
 
