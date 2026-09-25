@@ -33,6 +33,10 @@ public class OwnershipValidator {
         Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
                 () -> new ForbiddenException("No customer associeted with authenticated user"));
 
+        if (!account.getCustomerId().equals(customer.getId())) {
+            throw new ForbiddenException("Account " + account.getId()
+                    + " does not belong to the authenticated customer");
+        }
     }
 
     private boolean hasPrivilegeRole() {
