@@ -14,6 +14,7 @@ import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ForbiddenException;
+import com.novabank.infra.security.OwnershipValidator;
 
 @Service
 @Transactional
@@ -22,12 +23,14 @@ public class TransferService {
     private final AccountService accountService;
     private final TransactionService transactionService;
     private final CustomerRepository customerRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public TransferService(AccountService accountService, TransactionService transactionService,
-            CustomerRepository customerRepository) {
+            CustomerRepository customerRepository, OwnershipValidator ownershipValidator) {
         this.accountService = accountService;
         this.transactionService = transactionService;
         this.customerRepository = customerRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public void transfer(Long sourceAccountId, Long targetAccountId, BigDecimal amount,
@@ -44,7 +47,7 @@ public class TransferService {
         Account sourceAccount = accountService.getAccountById(sourceAccountId);
         Account targetAccount = accountService.getAccountById(targetAccountId);
 
-        validateOwnerShip(sourceAccount);
+        ownershipValidator.validateAccountOwnership(sourceAccount);
 
         if (!sourceAccount.isActive()) {
             throw new BusinessException("Source account is not active");
