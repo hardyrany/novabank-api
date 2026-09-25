@@ -1,6 +1,9 @@
 package com.novabank.infra.security;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import com.novabank.features.account.entity.Account;
 import com.novabank.features.customer.repository.CustomerRepository;
 
 @Component
@@ -10,5 +13,24 @@ public class OwnershipValidator {
 
     public OwnershipValidator(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
+    }
+
+    public void validateAccountOwnership(Account account) {
+        if (hasPrivilegeRole()) {
+            return;
+        }
+    }
+
+    private boolean hasPrivilegeRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream().anyMatch(authority -> {
+            String role = authority.getAuthority();
+            return "ROLE_ADMIN".equals(role) || "ROLE_SUPPORT".equals(role);
+        });
     }
 }
