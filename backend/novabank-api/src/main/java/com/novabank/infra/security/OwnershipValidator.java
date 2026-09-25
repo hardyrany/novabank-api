@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.customer.repository.CustomerRepository;
+import com.novabank.infra.exception.ForbiddenException;
 
 @Component
 public class OwnershipValidator {
@@ -19,6 +20,13 @@ public class OwnershipValidator {
         if (hasPrivilegeRole()) {
             return;
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new ForbiddenException("No authenticated user found");
+        }
+
     }
 
     private boolean hasPrivilegeRole() {
