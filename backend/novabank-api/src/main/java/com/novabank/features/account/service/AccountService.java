@@ -58,12 +58,9 @@ public class AccountService {
     @Transactional(readOnly = true)
     public Account getAccountById(Long id) {
 
-        Account account = accountRepository.findById(id).orElseThrow(
+        return accountRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Account not found with id: " + id));
 
-        ownershipValidator.validateAccountOwnership(account);
-
-        return account;
     }
 
     @Transactional(readOnly = true)
