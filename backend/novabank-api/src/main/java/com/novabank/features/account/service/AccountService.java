@@ -88,6 +88,7 @@ public class AccountService {
     public Account updateAccount(Long id, Account accountDetails) {
 
         Account existingAccount = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(existingAccount);
 
         if (accountDetails.getAccountType() != null) {
             existingAccount.setAccountType(accountDetails.getAccountType());
