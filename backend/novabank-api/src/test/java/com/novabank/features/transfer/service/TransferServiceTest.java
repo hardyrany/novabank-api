@@ -70,16 +70,14 @@ public class TransferServiceTest {
 
         when(accountService.getAccountById(sourceAccountId)).thenReturn(sourceAccount);
         when(accountService.getAccountById(targetAccountId)).thenReturn(targetAccount);
-        when(accountService.updateAccount(eq(sourceAccountId), any(Account.class)))
-                .thenReturn(sourceAccount);
-        when(accountService.updateAccount(eq(targetAccountId), any(Account.class)))
-                .thenReturn(targetAccount);
+        when(accountService.saveAccount(any(Account.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         transferService.transfer(sourceAccountId, targetAccountId, amount, description);
 
         verify(ownershipValidator).validateAccountOwnership(sourceAccount);
-        verify(accountService).updateAccount(eq(sourceAccountId), any(Account.class));
-        verify(accountService).updateAccount(eq(targetAccountId), any(Account.class));
+        verify(accountService).saveAccount(sourceAccount);
+        verify(accountService).saveAccount(targetAccount);
 
         verify(transactionService).transactionRecordEntry(sourceAccountId,
                 TransactionType.TRANSFER_OUT, amount, newSourceBalance,
@@ -153,7 +151,7 @@ public class TransferServiceTest {
         verify(accountService).getAccountById(sourceAccountId);
         verify(accountService).getAccountById(targetAccountId);
         verify(ownershipValidator).validateAccountOwnership(sourceAccount);
-        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(accountService, never()).saveAccount(any(Account.class));
     }
 
     @Test
@@ -167,7 +165,7 @@ public class TransferServiceTest {
         assertThrows(ForbiddenException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, amount, description));
 
-        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(accountService, never()).saveAccount(any(Account.class));
     }
 
     @Test
@@ -181,6 +179,6 @@ public class TransferServiceTest {
         assertThrows(ForbiddenException.class, () -> transferService.transfer(sourceAccountId,
                 targetAccountId, amount, description));
 
-        verify(accountService, never()).updateAccount(anyLong(), any(Account.class));
+        verify(accountService, never()).saveAccount(any(Account.class));
     }
 }
