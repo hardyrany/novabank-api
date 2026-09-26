@@ -37,10 +37,11 @@ public class AccountController {
     private final AccountMapper accountMapper;
     private final TransactionService transactionService;
     private final TransactionMapper transactionMapper;
-    private  final OwnershipValidator ownershipValidator;
+    private final OwnershipValidator ownershipValidator;
 
     public AccountController(AccountService accountService, AccountMapper accountMapper,
-            TransactionService transactionService, TransactionMapper transactionMapper,OwnershipValidator ownershipValidator) {
+            TransactionService transactionService, TransactionMapper transactionMapper,
+            OwnershipValidator ownershipValidator) {
 
         this.accountService = accountService;
         this.accountMapper = accountMapper;
@@ -67,6 +68,7 @@ public class AccountController {
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
         AccountResponse accountResponse = accountMapper.toResponse(account);
 
         return ResponseEntity.ok(accountResponse);
