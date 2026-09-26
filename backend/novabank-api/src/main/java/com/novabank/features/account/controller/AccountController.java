@@ -173,6 +173,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}/withdraw")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<AccountResponse> withdraw(@PathVariable Long id,
             @RequestBody WithdrawRequest withdrawRequest) {
 
