@@ -27,6 +27,7 @@ import com.novabank.features.transaction.dto.TransactionResponse;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.mapper.TransactionMapper;
 import com.novabank.features.transaction.service.TransactionService;
+import com.novabank.infra.security.OwnershipValidator;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
@@ -36,14 +37,16 @@ public class AccountController {
     private final AccountMapper accountMapper;
     private final TransactionService transactionService;
     private final TransactionMapper transactionMapper;
+    private  final OwnershipValidator ownershipValidator;
 
     public AccountController(AccountService accountService, AccountMapper accountMapper,
-            TransactionService transactionService, TransactionMapper transactionMapper) {
+            TransactionService transactionService, TransactionMapper transactionMapper,OwnershipValidator ownershipValidator) {
 
         this.accountService = accountService;
         this.accountMapper = accountMapper;
         this.transactionService = transactionService;
         this.transactionMapper = transactionMapper;
+        this.ownershipValidator = ownershipValidator;
 
     }
 
