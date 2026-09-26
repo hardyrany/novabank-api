@@ -185,6 +185,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/transactions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<List<TransactionResponse>> getTransactionResponse(@PathVariable Long id) {
 
         List<Transaction> transactions = transactionService.getHistoryByAccountId(id);
@@ -193,6 +194,4 @@ public class AccountController {
 
         return ResponseEntity.ok(transactionResponses);
     }
-
-
 }
