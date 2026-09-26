@@ -115,6 +115,7 @@ public class AccountController {
     public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         return ResponseEntity.ok(account.getBalance());
     }
