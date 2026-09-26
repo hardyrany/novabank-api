@@ -159,6 +159,7 @@ public class AccountService {
         }
 
         Account account = getAccountById(accountId);
+        ownershipValidator.validateAccountOwnership(account);
 
         BigDecimal newBalance = account.getBalance().add(amount);
         account.setBalance(newBalance);
