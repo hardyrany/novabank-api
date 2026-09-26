@@ -39,6 +39,28 @@ public class OwnershipValidator {
         }
     }
 
+    public void validateCustomerOwnership(Long customerId) {
+        if (hasPrivilegedRole()) {
+            return;
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new ForbiddenException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+
+        Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new ForbiddenException("No customer associated with authenticated user"));
+
+        if (!customerId.equals(customer.getId())) {
+            throw new ForbiddenException(
+                    "Customer " + customerId + " does not match the authenticated customer");
+        }
+    }
+
     private boolean hasPrivilegedRole() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
