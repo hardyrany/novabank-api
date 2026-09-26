@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
-import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
@@ -21,7 +20,7 @@ public class TransferService {
     private final OwnershipValidator ownershipValidator;
 
     public TransferService(AccountService accountService, TransactionService transactionService,
-            CustomerRepository customerRepository, OwnershipValidator ownershipValidator) {
+            OwnershipValidator ownershipValidator) {
         this.accountService = accountService;
         this.transactionService = transactionService;
         this.ownershipValidator = ownershipValidator;
@@ -57,11 +56,11 @@ public class TransferService {
 
         BigDecimal newSourceBalance = sourceAccount.getBalance().subtract(amount);
         sourceAccount.setBalance(newSourceBalance);
-        accountService.updateAccount(sourceAccountId, sourceAccount);
+        accountService.saveAccount(sourceAccount);
 
         BigDecimal newTargetBalance = targetAccount.getBalance().add(amount);
         targetAccount.setBalance(newTargetBalance);
-        accountService.updateAccount(targetAccountId, targetAccount);
+        accountService.saveAccount(targetAccount);
 
         String debitDescription =
                 description != null ? "Transfer to account " + targetAccountId + " - " + description
