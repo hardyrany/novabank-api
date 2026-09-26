@@ -206,6 +206,10 @@ public class AccountService {
         return savedAccount;
     }
 
+    public Account saveAccount(Account account) {
+        return accountRepository.save(account);
+    }
+
     private String generateAccountNumber() {
         return System.currentTimeMillis() + String.format("%04d", RANDOM.nextInt(10_000));
     }
