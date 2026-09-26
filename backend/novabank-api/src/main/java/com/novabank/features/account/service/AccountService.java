@@ -122,6 +122,7 @@ public class AccountService {
     public CustomerAccountSummary getCustomerSummary(Long customerId) {
 
         customerService.getCustomerById(customerId);
+        ownershipValidator.validateCustomerOwnership(customerId);
 
         List<Account> accounts = accountRepository.findByCustomerId(customerId);
 
