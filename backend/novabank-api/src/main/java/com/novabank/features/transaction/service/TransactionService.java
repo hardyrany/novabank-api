@@ -1,7 +1,7 @@
 package com.novabank.features.transaction.service;
 
+import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
-import com.novabank.features.customer.repository.CustomerRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.repository.TransactionRepository;
+import com.novabank.infra.exception.ResourceNotFoundException;
 import com.novabank.infra.security.OwnershipValidator;
 
 @Service
@@ -42,6 +43,12 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountId(Long accountId) {
+
+        Account account = accountRepository.findById(accountId).orElseThrow(
+                () -> new ResourceNotFoundException("Account not found with id: " + accountId));
+
+        ownershipValidator.validateAccountOwnership(account);
+
         return transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
