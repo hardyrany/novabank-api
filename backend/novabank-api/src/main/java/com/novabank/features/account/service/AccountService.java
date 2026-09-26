@@ -183,6 +183,7 @@ public class AccountService {
         }
 
         Account account = getAccountById(accountId);
+        ownershipValidator.validateAccountOwnership(account);
 
         if (account.getBalance().compareTo(amount) < 0) {
             throw new BusinessException("Insufficient balance for withdraw");
