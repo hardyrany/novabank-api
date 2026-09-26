@@ -77,6 +77,7 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<Account> getAccountsByCustomerId(Long customerId) {
         customerService.getCustomerById(customerId);
+        ownershipValidator.validateCustomerOwnership(customerId);
 
         return accountRepository.findByCustomerId(customerId);
     }
