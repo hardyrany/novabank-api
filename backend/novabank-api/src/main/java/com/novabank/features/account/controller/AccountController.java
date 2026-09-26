@@ -81,6 +81,7 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}")
+    @PreAuthorize ("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(
             @PathVariable Long customerId) {
 
