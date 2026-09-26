@@ -9,6 +9,7 @@ import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.security.OwnershipValidator;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
@@ -25,15 +26,17 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
     private static final SecureRandom RANDOM = new SecureRandom();
+    private final OwnershipValidator ownershipValidator;
 
     public AccountService(AccountRepository accountRepository,
             CustomerRepository customerRepository, CustomerService customerService,
-            TransactionService transactionService) {
+            TransactionService transactionService, OwnershipValidator ownershipValidator) {
 
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
         this.customerService = customerService;
         this.transactionService = transactionService;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public Account createAccount(Account account) {
@@ -55,8 +58,12 @@ public class AccountService {
     @Transactional(readOnly = true)
     public Account getAccountById(Long id) {
 
-        return accountRepository.findById(id).orElseThrow(
+        Account account = accountRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Account not found with id: " + id));
+
+        ownershipValidator.validateAccountOwnership(account);
+
+        return account;
     }
 
     @Transactional(readOnly = true)
