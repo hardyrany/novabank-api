@@ -103,6 +103,7 @@ public class AccountService {
     public void deactivateAccount(Long id) {
 
         Account account = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         account.setActive(false);
         accountRepository.save(account);
