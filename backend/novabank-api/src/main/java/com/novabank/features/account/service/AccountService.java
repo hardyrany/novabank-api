@@ -112,6 +112,7 @@ public class AccountService {
     public void activateAccount(Long id) {
 
         Account account = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         account.setActive(true);
         accountRepository.save(account);
