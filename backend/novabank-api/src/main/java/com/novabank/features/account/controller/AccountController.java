@@ -27,6 +27,7 @@ import com.novabank.features.transaction.dto.TransactionResponse;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.mapper.TransactionMapper;
 import com.novabank.features.transaction.service.TransactionService;
+import com.novabank.infra.security.OwnershipValidator;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
@@ -36,14 +37,17 @@ public class AccountController {
     private final AccountMapper accountMapper;
     private final TransactionService transactionService;
     private final TransactionMapper transactionMapper;
+    private final OwnershipValidator ownershipValidator;
 
     public AccountController(AccountService accountService, AccountMapper accountMapper,
-            TransactionService transactionService, TransactionMapper transactionMapper) {
+            TransactionService transactionService, TransactionMapper transactionMapper,
+            OwnershipValidator ownershipValidator) {
 
         this.accountService = accountService;
         this.accountMapper = accountMapper;
         this.transactionService = transactionService;
         this.transactionMapper = transactionMapper;
+        this.ownershipValidator = ownershipValidator;
 
     }
 
@@ -57,13 +61,14 @@ public class AccountController {
         AccountResponse accountResponse = accountMapper.toResponse(savedAccount);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(accountResponse);
-
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER' )")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
         AccountResponse accountResponse = accountMapper.toResponse(account);
 
         return ResponseEntity.ok(accountResponse);
@@ -81,6 +86,7 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(
             @PathVariable Long customerId) {
 
@@ -105,14 +111,17 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/balance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         return ResponseEntity.ok(account.getBalance());
     }
 
     @GetMapping("/customer/{customerId}/account-summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<CustomerAccountSummary> getCustomerAccountSummary(
             @PathVariable Long customerId) {
 
@@ -157,6 +166,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}/deposit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<AccountResponse> deposit(@PathVariable Long id,
             @RequestBody DepositRequest depositRequest) {
 
@@ -169,6 +179,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}/withdraw")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<AccountResponse> withdraw(@PathVariable Long id,
             @RequestBody WithdrawRequest withdrawRequest) {
 
@@ -180,6 +191,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/transactions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<List<TransactionResponse>> getTransactionResponse(@PathVariable Long id) {
 
         List<Transaction> transactions = transactionService.getHistoryByAccountId(id);
@@ -188,6 +200,4 @@ public class AccountController {
 
         return ResponseEntity.ok(transactionResponses);
     }
-
-
 }

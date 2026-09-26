@@ -22,6 +22,7 @@ import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.security.OwnershipValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
@@ -40,6 +41,9 @@ public class AccountServiceTest {
 
     @InjectMocks
     private AccountService accountService;
+
+    @Mock
+    private OwnershipValidator ownershipValidator;
 
     private Account account;
 

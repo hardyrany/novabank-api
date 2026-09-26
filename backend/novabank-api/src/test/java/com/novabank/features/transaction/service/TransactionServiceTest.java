@@ -6,17 +6,20 @@ import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.novabank.features.account.entity.Account;
+import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.repository.TransactionRepository;
+import com.novabank.infra.security.OwnershipValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class TransactionServiceTest {
@@ -24,10 +27,17 @@ public class TransactionServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private AccountRepository accountRepository;
+
+    @Mock
+    private OwnershipValidator ownershipValidator;
+
     @InjectMocks
     private TransactionService transactionService;
 
     private Transaction transaction;
+    private Account account;
     private Long accountId;
     private BigDecimal amount;
     private BigDecimal balanceAfter;
@@ -48,18 +58,19 @@ public class TransactionServiceTest {
         transaction.setDescription("Test deposit");
         transaction.setCreatedAt(LocalDateTime.now());
 
+        account = new Account();
+        account.setId(accountId);
+        account.setCustomerId(1L);
+        account.setBalance(BigDecimal.valueOf(1000.00));
     }
 
     @Test
     void recordEntry_ShouldSaveTransaction_WhenSuccessful() {
-        // Arrange
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
-        // Act
         Transaction result = transactionService.transactionRecordEntry(accountId,
                 TransactionType.DEPOSIT, amount, balanceAfter, "Test deposit");
 
-        // Assert
         assertNotNull(result);
         assertEquals(accountId, result.getAccountId());
         assertEquals(TransactionType.DEPOSIT, result.getTransactionType());
@@ -72,7 +83,6 @@ public class TransactionServiceTest {
 
     @Test
     void getRecentTransactions_ShouldReturnLast10Transactions_WhenAccountHasManyTransactions() {
-        // Arrange
         List<Transaction> transactions = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             Transaction t = new Transaction();
@@ -82,30 +92,25 @@ public class TransactionServiceTest {
             t.setAmount(BigDecimal.valueOf(i * 10.00));
             t.setBalanceAfter(BigDecimal.valueOf(1000.00 - (i * 10.00)));
             t.setDescription("Transaction " + i);
-            // Data: quanto maior o i, mais recente (i=10 é o mais recente)
             t.setCreatedAt(LocalDateTime.now().minusMinutes(10 - i));
             transactions.add(t);
         }
-        // Ordena manualmente: do mais recente para o mais antigo
         transactions.sort((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()));
 
         when(transactionRepository.findTop10ByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(transactions);
 
-        // Act
         List<Transaction> result = transactionService.getRecentTransactions(accountId);
 
-        // Assert
         assertNotNull(result);
         assertEquals(10, result.size());
-        assertEquals("Transaction 10", result.get(0).getDescription()); // ✅ Agora passa
+        assertEquals("Transaction 10", result.get(0).getDescription());
 
         verify(transactionRepository).findTop10ByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Test
     void getHistoryByAccountIdAndType_ShouldFilterByType_WhenValidType() {
-        // Arrange
         List<Transaction> deposits = new ArrayList<>();
         for (int i = 1; i <= 3; i++) {
             Transaction t = new Transaction();
@@ -119,14 +124,12 @@ public class TransactionServiceTest {
             deposits.add(t);
         }
 
-        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(accountId,
-                TransactionType.DEPOSIT)).thenReturn(deposits);
+        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
+                accountId, TransactionType.DEPOSIT)).thenReturn(deposits);
 
-        // Act
         List<Transaction> result =
                 transactionService.getHistoryByAccountIdAndType(accountId, TransactionType.DEPOSIT);
 
-        // Assert
         assertNotNull(result);
         assertEquals(3, result.size());
         assertTrue(
@@ -138,7 +141,6 @@ public class TransactionServiceTest {
 
     @Test
     void getHistoryByAccountId_ShouldReturnTransactionList_WhenAccountHasTransactions() {
-        // Arrange
         List<Transaction> transactions = new ArrayList<>();
         for (int i = 1; i <= 3; i++) {
             Transaction t = new Transaction();
@@ -152,35 +154,34 @@ public class TransactionServiceTest {
             transactions.add(t);
         }
 
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(transactions);
 
-        // Act
         List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
 
-        // Assert
         assertNotNull(result);
         assertEquals(3, result.size());
         assertEquals("Transaction 1", result.get(0).getDescription());
 
+        verify(ownershipValidator).validateAccountOwnership(account);
         verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
     @Test
     void getHistoryByAccountId_ShouldReturnEmptyList_WhenAccountHasNoTransactions() {
-        // Arrange
         List<Transaction> emptyList = new ArrayList<>();
 
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
                 .thenReturn(emptyList);
 
-        // Act
         List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
 
-        // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
 
+        verify(ownershipValidator).validateAccountOwnership(account);
         verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 }

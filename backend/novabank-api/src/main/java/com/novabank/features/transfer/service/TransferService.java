@@ -1,19 +1,15 @@
 package com.novabank.features.transfer.service;
 
 import java.math.BigDecimal;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.service.AccountService;
-import com.novabank.features.customer.entity.Customer;
-import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
-import com.novabank.infra.exception.ForbiddenException;
+import com.novabank.infra.security.OwnershipValidator;
 
 @Service
 @Transactional
@@ -21,13 +17,13 @@ public class TransferService {
 
     private final AccountService accountService;
     private final TransactionService transactionService;
-    private final CustomerRepository customerRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public TransferService(AccountService accountService, TransactionService transactionService,
-            CustomerRepository customerRepository) {
+            OwnershipValidator ownershipValidator) {
         this.accountService = accountService;
         this.transactionService = transactionService;
-        this.customerRepository = customerRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public void transfer(Long sourceAccountId, Long targetAccountId, BigDecimal amount,
@@ -44,7 +40,7 @@ public class TransferService {
         Account sourceAccount = accountService.getAccountById(sourceAccountId);
         Account targetAccount = accountService.getAccountById(targetAccountId);
 
-        validateOwnerShip(sourceAccount);
+        ownershipValidator.validateAccountOwnership(sourceAccount);
 
         if (!sourceAccount.isActive()) {
             throw new BusinessException("Source account is not active");
@@ -60,11 +56,11 @@ public class TransferService {
 
         BigDecimal newSourceBalance = sourceAccount.getBalance().subtract(amount);
         sourceAccount.setBalance(newSourceBalance);
-        accountService.updateAccount(sourceAccountId, sourceAccount);
+        accountService.saveAccount(sourceAccount);
 
         BigDecimal newTargetBalance = targetAccount.getBalance().add(amount);
         targetAccount.setBalance(newTargetBalance);
-        accountService.updateAccount(targetAccountId, targetAccount);
+        accountService.saveAccount(targetAccount);
 
         String debitDescription =
                 description != null ? "Transfer to account " + targetAccountId + " - " + description
@@ -79,25 +75,6 @@ public class TransferService {
 
         transactionService.transactionRecordEntry(targetAccountId, TransactionType.TRANSFER_IN,
                 amount, newTargetBalance, creditDescription);
-    }
-
-    private void validateOwnerShip(Account sourceAccount) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new ForbiddenException("No authenticated user found");
-        }
-
-        String email = authentication.getName();
-
-        Customer customer = customerRepository.findByEmailIgnoreCase(email).orElseThrow(
-                () -> new ForbiddenException("No Customer associated with authenticated user"));
-
-        if (!sourceAccount.getCustomerId().equals(customer.getId())) {
-            throw new ForbiddenException("Account " + sourceAccount.getId()
-                    + " does not belong to the authenticated customer");
-        }
     }
 
 }

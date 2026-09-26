@@ -1,6 +1,7 @@
 package com.novabank.features.transaction.service;
 
-import com.novabank.features.customer.repository.CustomerRepository;
+import com.novabank.features.account.entity.Account;
+import com.novabank.features.account.repository.AccountRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -8,18 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.repository.TransactionRepository;
+import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.security.OwnershipValidator;
 
 @Service
 @Transactional
 public class TransactionService {
 
-    private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public TransactionService(TransactionRepository transactionRepository,
-            CustomerRepository customerRepository) {
+            AccountRepository accountRepository, OwnershipValidator ownershipValidator) {
         this.transactionRepository = transactionRepository;
-        this.customerRepository = customerRepository;
+        this.accountRepository = accountRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public Transaction transactionRecordEntry(Long accountId, TransactionType transactionType,
@@ -38,6 +43,12 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountId(Long accountId) {
+
+        Account account = accountRepository.findById(accountId).orElseThrow(
+                () -> new ResourceNotFoundException("Account not found with id: " + accountId));
+
+        ownershipValidator.validateAccountOwnership(account);
+
         return transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
     }
 
@@ -49,7 +60,7 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public List<Transaction> getHistoryByAccountIdAndType(Long accountId,
             TransactionType transactionType) {
-        return transactionRepository
-                .findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(accountId, transactionType);
+        return transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
+                accountId, transactionType);
     }
 }

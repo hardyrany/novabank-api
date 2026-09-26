@@ -9,6 +9,7 @@ import com.novabank.features.transaction.enums.TransactionType;
 import com.novabank.features.transaction.service.TransactionService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.security.OwnershipValidator;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.List;
@@ -25,15 +26,17 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;
     private static final SecureRandom RANDOM = new SecureRandom();
+    private final OwnershipValidator ownershipValidator;
 
     public AccountService(AccountRepository accountRepository,
             CustomerRepository customerRepository, CustomerService customerService,
-            TransactionService transactionService) {
+            TransactionService transactionService, OwnershipValidator ownershipValidator) {
 
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
         this.customerService = customerService;
         this.transactionService = transactionService;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public Account createAccount(Account account) {
@@ -57,6 +60,7 @@ public class AccountService {
 
         return accountRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Account not found with id: " + id));
+
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +74,7 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<Account> getAccountsByCustomerId(Long customerId) {
         customerService.getCustomerById(customerId);
+        ownershipValidator.validateCustomerOwnership(customerId);
 
         return accountRepository.findByCustomerId(customerId);
     }
@@ -83,6 +88,7 @@ public class AccountService {
     public Account updateAccount(Long id, Account accountDetails) {
 
         Account existingAccount = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(existingAccount);
 
         if (accountDetails.getAccountType() != null) {
             existingAccount.setAccountType(accountDetails.getAccountType());
@@ -97,6 +103,7 @@ public class AccountService {
     public void deactivateAccount(Long id) {
 
         Account account = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         account.setActive(false);
         accountRepository.save(account);
@@ -105,6 +112,7 @@ public class AccountService {
     public void activateAccount(Long id) {
 
         Account account = getAccountById(id);
+        ownershipValidator.validateAccountOwnership(account);
 
         account.setActive(true);
         accountRepository.save(account);
@@ -114,6 +122,7 @@ public class AccountService {
     public CustomerAccountSummary getCustomerSummary(Long customerId) {
 
         customerService.getCustomerById(customerId);
+        ownershipValidator.validateCustomerOwnership(customerId);
 
         List<Account> accounts = accountRepository.findByCustomerId(customerId);
 
@@ -153,6 +162,7 @@ public class AccountService {
         }
 
         Account account = getAccountById(accountId);
+        ownershipValidator.validateAccountOwnership(account);
 
         BigDecimal newBalance = account.getBalance().add(amount);
         account.setBalance(newBalance);
@@ -176,6 +186,7 @@ public class AccountService {
         }
 
         Account account = getAccountById(accountId);
+        ownershipValidator.validateAccountOwnership(account);
 
         if (account.getBalance().compareTo(amount) < 0) {
             throw new BusinessException("Insufficient balance for withdraw");
@@ -193,6 +204,10 @@ public class AccountService {
                 newBalance, transactionDescription);
 
         return savedAccount;
+    }
+
+    public Account saveAccount(Account account) {
+        return accountRepository.save(account);
     }
 
     private String generateAccountNumber() {
