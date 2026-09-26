@@ -160,6 +160,7 @@ public class AccountController {
     }
 
     @PostMapping("/{id}/deposit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<AccountResponse> deposit(@PathVariable Long id,
             @RequestBody DepositRequest depositRequest) {
 
