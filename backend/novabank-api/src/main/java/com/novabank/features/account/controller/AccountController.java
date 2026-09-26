@@ -57,10 +57,10 @@ public class AccountController {
         AccountResponse accountResponse = accountMapper.toResponse(savedAccount);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(accountResponse);
-
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER' )")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
