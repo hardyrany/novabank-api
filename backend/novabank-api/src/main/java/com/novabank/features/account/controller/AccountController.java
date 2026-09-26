@@ -81,7 +81,7 @@ public class AccountController {
     }
 
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize ("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(
             @PathVariable Long customerId) {
 
@@ -106,6 +106,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/balance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<BigDecimal> getAccountBalance(@PathVariable Long id) {
 
         Account account = accountService.getAccountById(id);
