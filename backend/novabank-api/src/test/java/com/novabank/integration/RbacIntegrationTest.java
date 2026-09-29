@@ -145,4 +145,10 @@ public class RbacIntegrationTest {
         mockMvc.perform(get("/api/v1/users").header("Authorization", userToken))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void get_users_ShouldReturn200_WhenSupportRole() throws Exception {
+        mockMvc.perform(get("/api/v1/users").header("Authorization", supportToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$").isArray());
+    }
 }
