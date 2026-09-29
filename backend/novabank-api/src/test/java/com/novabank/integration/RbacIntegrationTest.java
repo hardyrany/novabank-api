@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.jayway.jsonpath.JsonPath;
 import com.novabank.features.user.entity.User;
@@ -119,5 +120,22 @@ public class RbacIntegrationTest {
         mockMvc.perform(post("/api/v1/users").header("Authorization", supportToken)
                 .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void post_users_ShouldReturn201_WhenAdminRole() throws Exception {
+        String uniqueEmail = "created" + System.currentTimeMillis() + "@novabank.local";
+        String userJson = """
+                {
+                    "email": "%s",
+                    "password": "TestPass123!",
+                    "roles": ["USER"]
+                }
+                """.formatted(uniqueEmail);
+
+        mockMvc.perform(post("/api/v1/users").header("Authorization", adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content(userJson))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.email").value(uniqueEmail))
+                .andExpect(jsonPath("$.roles[0]").value("USER"));
     }
 }
