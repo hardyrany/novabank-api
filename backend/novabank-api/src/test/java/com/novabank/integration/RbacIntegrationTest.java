@@ -151,4 +151,22 @@ public class RbacIntegrationTest {
         mockMvc.perform(get("/api/v1/users").header("Authorization", supportToken))
                 .andExpect(status().isOk()).andExpect(jsonPath("$").isArray());
     }
+
+    @Test
+    void post_customers_ShouldReturn403_WhenUserRole() throws Exception {
+        String customerJson = """
+                {
+                    "firstName": "Test",
+                    "lastName": "Customer",
+                    "email": "test%d@novabank.local",
+                    "documentNumber": "DOC-%d",
+                    "documentType": "NATIONAL_ID",
+                    "birthDate": "1990-01-01"
+                }
+                """.formatted(System.currentTimeMillis(), System.currentTimeMillis());
+
+        mockMvc.perform(post("/api/v1/customers").header("Authorization", userToken)
+                .contentType(MediaType.APPLICATION_JSON).content(customerJson))
+                .andExpect(status().isForbidden());
+    }
 }
