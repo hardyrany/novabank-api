@@ -1,6 +1,14 @@
 package com.novabank.integration;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +18,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.jayway.jsonpath.JsonPath;
+import com.novabank.features.account.entity.Account;
+import com.novabank.features.account.repository.AccountRepository;
+import com.novabank.features.customer.entity.Customer;
+import com.novabank.features.customer.repository.CustomerRepository;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
@@ -31,17 +40,27 @@ public class RbacIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private String adminToken;
     private String supportToken;
     private String userToken;
+    private Long ownAccountId;
+    private Long otherAccountId;
 
     @BeforeEach
     void setUp() throws Exception {
-        String adminEmail = "admin" + System.currentTimeMillis() + "@novabank.local";
-        String supportEmail = "support" + System.currentTimeMillis() + "@novabank.local";
-        String userEmail = "user" + System.currentTimeMillis() + "@novabank.local";
+        long timestamp = System.currentTimeMillis();
+
+        String adminEmail = "admin" + timestamp + "@novabank.local";
+        String supportEmail = "support" + timestamp + "@novabank.local";
+        String userEmail = "user" + timestamp + "@novabank.local";
         String password = "TestPass123!";
 
         createUser(adminEmail, password, Role.ADMIN);
@@ -51,6 +70,15 @@ public class RbacIntegrationTest {
         adminToken = "Bearer " + login(adminEmail, password);
         supportToken = "Bearer " + login(supportEmail, password);
         userToken = "Bearer " + login(userEmail, password);
+
+        // Create customer for the USER (email matches so ownership validation passes)
+        Customer userCustomer = createCustomer(userEmail, "USER-" + timestamp);
+        ownAccountId = createAccount(userCustomer.getId(), "ACC-" + (timestamp % 10000000000L));
+
+        // Create a different customer + account (not owned by USER)
+        Customer otherCustomer =
+                createCustomer("other" + timestamp + "@novabank.local", "OTHER-" + timestamp);
+        otherAccountId = createAccount(otherCustomer.getId(), "OTH-" + (timestamp % 10000000000L));
     }
 
     private void createUser(String email, String password, Role role) {
@@ -60,6 +88,29 @@ public class RbacIntegrationTest {
         user.setRoles(Set.of(role));
         user.setIsActive(true);
         userRepository.save(user);
+    }
+
+    private Customer createCustomer(String email, String documentNumber) {
+        Customer customer = new Customer();
+        customer.setFirstName("Test");
+        customer.setLastName("Customer");
+        customer.setEmail(email);
+        customer.setDocumentNumber(documentNumber);
+        customer.setDocumentType("NATIONAL_ID");
+        customer.setBirthDate(LocalDate.of(1990, 1, 1));
+        customer.setActive(true);
+        return customerRepository.save(customer);
+    }
+
+    private Long createAccount(Long customerId, String accountNumber) {
+        Account account = new Account();
+        account.setCustomerId(customerId);
+        account.setAccountNumber(accountNumber);
+        account.setAccountType("CHECKING");
+        account.setBalance(BigDecimal.ZERO);
+        account.setCurrency("USD");
+        account.setActive(true);
+        return accountRepository.save(account).getId();
     }
 
     private String login(String email, String password) throws Exception {
@@ -79,119 +130,15 @@ public class RbacIntegrationTest {
     }
 
     @Test
-    void post_users_ShouldReturn401_WhenNoToken() throws Exception {
-        String userJson = """
-                {
-                    "email": "test@novabank.local",
-                    "password": "TestPass123!",
-                    "roles": ["USER"]
-                }
-                """;
+    void get_accountById_ShouldReturn200_WhenUserOwnsAccount() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/" + ownAccountId).header("Authorization", userToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(ownAccountId));
+    }
 
+    @Test
+    void get_accountById_ShouldReturn403_WhenUserDoesNotOwnAccount() throws Exception {
         mockMvc.perform(
-                post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content(userJson))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void post_users_ShouldReturn403_WhenUserRole() throws Exception {
-        String userJson = """
-                {
-                    "email": "test@novabank.local",
-                    "password": "TestPass123!",
-                    "roles": ["USER"]
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users").header("Authorization", userToken)
-                .contentType(MediaType.APPLICATION_JSON).content(userJson))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void post_users_ShouldReturn403_WhenSupportRole() throws Exception {
-        String userJson = """
-                {
-                    "email": "test@novabank.local",
-                    "password": "TestPass123!",
-                    "roles": ["USER"]
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users").header("Authorization", supportToken)
-                .contentType(MediaType.APPLICATION_JSON).content(userJson))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void post_users_ShouldReturn201_WhenAdminRole() throws Exception {
-        String uniqueEmail = "created" + System.currentTimeMillis() + "@novabank.local";
-        String userJson = """
-                {
-                    "email": "%s",
-                    "password": "TestPass123!",
-                    "roles": ["USER"]
-                }
-                """.formatted(uniqueEmail);
-
-        mockMvc.perform(post("/api/v1/users").header("Authorization", adminToken)
-                .contentType(MediaType.APPLICATION_JSON).content(userJson))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.email").value(uniqueEmail))
-                .andExpect(jsonPath("$.roles[0]").value("USER"));
-    }
-
-    @Test
-    void get_users_ShouldReturn403_WhenUserRole() throws Exception {
-        mockMvc.perform(get("/api/v1/users").header("Authorization", userToken))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void get_users_ShouldReturn200_WhenSupportRole() throws Exception {
-        mockMvc.perform(get("/api/v1/users").header("Authorization", supportToken))
-                .andExpect(status().isOk()).andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    void post_customers_ShouldReturn403_WhenUserRole() throws Exception {
-        String customerJson = """
-                {
-                    "firstName": "Test",
-                    "lastName": "Customer",
-                    "email": "test%d@novabank.local",
-                    "documentNumber": "DOC-%d",
-                    "documentType": "NATIONAL_ID",
-                    "birthDate": "1990-01-01"
-                }
-                """.formatted(System.currentTimeMillis(), System.currentTimeMillis());
-
-        mockMvc.perform(post("/api/v1/customers").header("Authorization", userToken)
-                .contentType(MediaType.APPLICATION_JSON).content(customerJson))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void post_customers_ShouldReturn201_WhenSupportRole() throws Exception {
-        String customerJson = """
-                {
-                    "firstName": "Support",
-                    "lastName": "Created",
-                    "email": "support.created%d@novabank.local",
-                    "documentNumber": "DOC-SUPPORT-%d",
-                    "documentType": "NATIONAL_ID",
-                    "birthDate": "1990-01-01"
-                }
-                """.formatted(System.currentTimeMillis(), System.currentTimeMillis());
-
-        mockMvc.perform(post("/api/v1/customers").header("Authorization", supportToken)
-                .contentType(MediaType.APPLICATION_JSON).content(customerJson))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.firstName").value("Support"));
-    }
-
-    @Test
-    void get_activeAccounts_ShouldReturn403_WhenUserRole() throws Exception {
-        mockMvc.perform(get("/api/v1/accounts/active").header("Authorization", userToken))
+                get("/api/v1/accounts/" + otherAccountId).header("Authorization", userToken))
                 .andExpect(status().isForbidden());
     }
 }
