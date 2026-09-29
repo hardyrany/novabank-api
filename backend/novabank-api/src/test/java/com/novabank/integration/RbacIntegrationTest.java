@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.jayway.jsonpath.JsonPath;
@@ -137,5 +138,11 @@ public class RbacIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.email").value(uniqueEmail))
                 .andExpect(jsonPath("$.roles[0]").value("USER"));
+    }
+
+    @Test
+    void get_users_ShouldReturn403_WhenUserRole() throws Exception {
+        mockMvc.perform(get("/api/v1/users").header("Authorization", userToken))
+                .andExpect(status().isForbidden());
     }
 }
