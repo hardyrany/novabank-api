@@ -188,4 +188,10 @@ public class RbacIntegrationTest {
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.firstName").value("Support"));
     }
+
+    @Test
+    void get_activeAccounts_ShouldReturn403_WhenUserRole() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/active").header("Authorization", userToken))
+                .andExpect(status().isForbidden());
+    }
 }
