@@ -1,6 +1,7 @@
 package com.novabank.integration;
 
 import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -33,8 +34,20 @@ public class RbacIntegrationTest {
     private String supportToken;
     private String userToken;
 
+    @BeforeEach
     void setUp() throws Exception {
+        String adminEmail = "admin" + System.currentTimeMillis() + "@novabank.local";
+        String supportEmail = "support" + System.currentTimeMillis() + "@novabank.local";
+        String userEmail = "user" + System.currentTimeMillis() + "@novabank.local";
+        String password = "TestPass123!";
 
+        createUser(adminEmail, password, Role.ADMIN);
+        createUser(supportEmail, password, Role.SUPPORT);
+        createUser(userEmail, password, Role.USER);
+
+        adminToken = "Bearer " + login(adminEmail, password);
+        supportToken = "Bearer " + login(supportEmail, password);
+        userToken = "Bearer " + login(userEmail, password);
     }
 
     private void createUser(String email, String password, Role role) {
