@@ -141,4 +141,33 @@ public class RbacIntegrationTest {
                 get("/api/v1/accounts/" + otherAccountId).header("Authorization", userToken))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void post_deposit_ShouldReturn200_WhenUserOwnsAccount() throws Exception {
+        String depositJson = """
+                {
+                    "amount": 100.00,
+                    "description": "Test deposit"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/accounts/" + ownAccountId + "/deposit")
+                .header("Authorization", userToken).contentType(MediaType.APPLICATION_JSON)
+                .content(depositJson)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(100.00));
+    }
+
+    @Test
+    void post_deposit_ShouldReturn403_WhenUserDoesNotOwnAccount() throws Exception {
+        String depositJson = """
+                {
+                    "amount": 100.00,
+                    "description": "Unauthorized deposit"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/accounts/" + otherAccountId + "/deposit")
+                .header("Authorization", userToken).contentType(MediaType.APPLICATION_JSON)
+                .content(depositJson)).andExpect(status().isForbidden());
+    }
 }
