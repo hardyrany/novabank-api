@@ -1,11 +1,14 @@
 package com.novabank.integration;
 
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import com.novabank.features.user.entity.User;
+import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
 
 @SpringBootTest
@@ -28,5 +31,14 @@ public class RbacIntegrationTest {
 
     void setUp() throws Exception {
 
+    }
+
+    private void createUser(String email, String password, Role role) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRoles(Set.of(role));
+        user.setIsActive(true);
+        userRepository.save(user);
     }
 }
