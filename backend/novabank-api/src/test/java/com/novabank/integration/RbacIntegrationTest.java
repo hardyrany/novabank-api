@@ -2,6 +2,7 @@ package com.novabank.integration;
 
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -73,5 +74,20 @@ public class RbacIntegrationTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         return JsonPath.read(response, "$.token");
+    }
+
+    @Test
+    void post_users_ShouldReturn401_WhenNoToken() throws Exception {
+        String userJson = """
+                {
+                    "email": "test@novabank.local",
+                    "password": "TestPass123!",
+                    "roles": ["USER"]
+                }
+                """;
+
+        mockMvc.perform(
+                post("/api/v1/users").contentType(MediaType.APPLICATION_JSON).content(userJson))
+                .andExpect(status().isUnauthorized());
     }
 }
