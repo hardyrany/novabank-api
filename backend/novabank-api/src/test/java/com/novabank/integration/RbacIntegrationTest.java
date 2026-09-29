@@ -105,4 +105,19 @@ public class RbacIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void post_users_ShouldReturn403_WhenSupportRole() throws Exception {
+        String userJson = """
+                {
+                    "email": "test@novabank.local",
+                    "password": "TestPass123!",
+                    "roles": ["USER"]
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users").header("Authorization", supportToken)
+                .contentType(MediaType.APPLICATION_JSON).content(userJson))
+                .andExpect(status().isForbidden());
+    }
 }
