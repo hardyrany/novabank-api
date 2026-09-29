@@ -169,4 +169,23 @@ public class RbacIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(customerJson))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void post_customers_ShouldReturn201_WhenSupportRole() throws Exception {
+        String customerJson = """
+                {
+                    "firstName": "Support",
+                    "lastName": "Created",
+                    "email": "support.created%d@novabank.local",
+                    "documentNumber": "DOC-SUPPORT-%d",
+                    "documentType": "NATIONAL_ID",
+                    "birthDate": "1990-01-01"
+                }
+                """.formatted(System.currentTimeMillis(), System.currentTimeMillis());
+
+        mockMvc.perform(post("/api/v1/customers").header("Authorization", supportToken)
+                .contentType(MediaType.APPLICATION_JSON).content(customerJson))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.firstName").value("Support"));
+    }
 }
