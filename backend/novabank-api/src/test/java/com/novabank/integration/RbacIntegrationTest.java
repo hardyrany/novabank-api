@@ -107,7 +107,7 @@ public class RbacIntegrationTest {
         account.setCustomerId(customerId);
         account.setAccountNumber(accountNumber);
         account.setAccountType("CHECKING");
-        account.setBalance(BigDecimal.ZERO);
+        account.setBalance(new BigDecimal("1000.00"));
         account.setCurrency("USD");
         account.setActive(true);
         return accountRepository.save(account).getId();
@@ -154,7 +154,7 @@ public class RbacIntegrationTest {
         mockMvc.perform(post("/api/v1/accounts/" + ownAccountId + "/deposit")
                 .header("Authorization", userToken).contentType(MediaType.APPLICATION_JSON)
                 .content(depositJson)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.balance").value(100.00));
+                .andExpect(jsonPath("$.balance").value(1100.00));
     }
 
     @Test
@@ -169,5 +169,37 @@ public class RbacIntegrationTest {
         mockMvc.perform(post("/api/v1/accounts/" + otherAccountId + "/deposit")
                 .header("Authorization", userToken).contentType(MediaType.APPLICATION_JSON)
                 .content(depositJson)).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void post_transfers_ShouldReturn403_WhenUserDoesNotOwnSourceAccount() throws Exception {
+        String transferJson = """
+                {
+                    "sourceAccountId": %d,
+                    "targetAccountId": %d,
+                    "amount": 50.00,
+                    "description": "Unauthorized transfer"
+                }
+                """.formatted(otherAccountId, ownAccountId);
+
+        mockMvc.perform(post("/api/v1/transfers").header("Authorization", userToken)
+                .contentType(MediaType.APPLICATION_JSON).content(transferJson))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void post_transfers_ShouldReturn201_WhenUserOwnsSourceAccount() throws Exception {
+        String transferJson = """
+                {
+                    "sourceAccountId": %d,
+                    "targetAccountId": %d,
+                    "amount": 50.00,
+                    "description": "Transfer to other account"
+                }
+                """.formatted(ownAccountId, otherAccountId);
+
+        mockMvc.perform(post("/api/v1/transfers").header("Authorization", userToken)
+                .contentType(MediaType.APPLICATION_JSON).content(transferJson))
+                .andExpect(status().isCreated());
     }
 }
