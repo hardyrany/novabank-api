@@ -1,7 +1,9 @@
 package com.novabank.infra.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +17,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import com.novabank.features.user.entity.User;
 import com.novabank.features.user.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
@@ -79,6 +81,28 @@ class MustChangePasswordFilterTest {
 
         verify(filterChain).doFilter(any(), any());
         verify(userRepository, never()).findByEmailIgnoreCase(any());
+    }
+
+    @Test
+    @DisplayName("Should block when mustChangePassword is true and path is not allowed")
+    void doFilterInternal_FlagTrue_BlockedPath_ShouldReturn403() throws Exception {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken("admin@novabank.local",
+                        null, AuthorityUtils.createAuthorityList("ROLE_ADMIN")));
+
+        User user = new User();
+        user.setMustChangePassword(true);
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.local"))
+                .thenReturn(Optional.of(user));
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/accounts/1");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getContentAsString()).contains("Password change required");
+        verify(filterChain, never()).doFilter(any(), any());
     }
 
 }
