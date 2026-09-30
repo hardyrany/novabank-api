@@ -24,9 +24,11 @@ import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
 import com.novabank.features.auth.dto.RegisterResponse;
+import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.features.user.service.UserService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
@@ -53,6 +55,9 @@ class AuthServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -313,5 +318,15 @@ class AuthServiceTest {
     }
 
     @Test
-    void getAuthenticatedUser_ShouldReturnUserResponse() {}
+    void getAuthenticatedUser_ShouldReturnUserResponse() {
+
+        // Arrange
+        UserResponse expectedResponse =
+                new UserResponse(user.getId(), "admin@novabank.com", true, Set.of(Role.ADMIN));
+
+        when(userService.getAuthenticatedUser()).thenReturn(expectedResponse);
+
+        // Act
+        UserResponse result = authService.getAuthenticatedUser();
+    }
 }
