@@ -94,7 +94,7 @@ public class User {
         this.password = password;
     }
 
-    public Boolean getMusChangePassword() {
+    public Boolean getMustChangePassword() {
         return mustChangePassword;
     }
 
