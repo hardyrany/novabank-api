@@ -4,4 +4,4 @@
 ALTER TABLE users.users
 ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT FALSE;
 
-COMMENT ON COLUMN users.users.must_change_password_password IS 'Forces user to change password on next request (first login or admins)'
+COMMENT ON COLUMN users.users.must_change_password IS 'Forces user to change password on next request (first login or admins)'
