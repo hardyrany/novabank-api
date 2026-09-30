@@ -253,4 +253,7 @@ class AuthServiceTest {
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    void changePassword_ShouldThrowBusinessException_WhenNewEqualsCurrent() {}
 }
