@@ -105,4 +105,22 @@ class MustChangePasswordFilterTest {
         verify(filterChain, never()).doFilter(any(), any());
     }
 
+    @Test
+    @DisplayName("Should pass when mustChangePassword is false")
+    void doFilterInternal_FlagFalse_ShouldPass() throws Exception {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken("admin@novabank.local",
+                        null, AuthorityUtils.createAuthorityList("ROLE_ADMIN")));
+
+        User user = new User();
+        user.setMustChangePassword(false);
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.local"))
+                .thenReturn(Optional.of(user));
+
+        filter.doFilterInternal(new MockHttpServletRequest("GET", "/api/v1/accounts/1"),
+                new MockHttpServletResponse(), filterChain);
+
+        verify(filterChain).doFilter(any(), any());
+    }
+
 }
