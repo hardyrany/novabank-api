@@ -27,6 +27,7 @@ import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 
@@ -235,5 +236,16 @@ class AuthServiceTest {
     }
 
     @Test
-    void changePassword_ShouldThrowBusinessException_WhenNewAndConfirmDoNotMatch() {}
+    void changePassword_ShouldThrowBusinessException_WhenNewAndConfirmDoNotMatch() {
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "differentPassword789");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> authService.changePassword(request));
+    }
 }
