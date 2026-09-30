@@ -4,6 +4,8 @@ import java.util.Comparator;
 import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @Service
 @Transactional
@@ -74,5 +77,19 @@ public class AuthService {
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new UnauthorizedException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new UnauthorizedException("User not found with email: " + email));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
     }
 }
