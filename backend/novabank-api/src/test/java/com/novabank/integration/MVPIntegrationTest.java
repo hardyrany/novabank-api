@@ -90,21 +90,13 @@ public class MVPIntegrationTest {
     }
 
     private void seedAdminIfMissing() {
-        userRepository.findByEmail("admin@novabank.local").ifPresentOrElse(admin -> {
-
-            admin.setPassword(passwordEncoder.encode("TestAdminPass123!"));
-            admin.setRoles(Set.of(Role.ADMIN));
-            admin.setIsActive(true);
-            userRepository.save(admin);
-        }, () -> {
-
-            User admin = new User();
-            admin.setEmail("admin@novabank.local");
-            admin.setPassword(passwordEncoder.encode("TestAdminPass123!"));
-            admin.setRoles(Set.of(Role.ADMIN));
-            admin.setIsActive(true);
-            userRepository.save(admin);
-        });
+        User admin = userRepository.findByEmail("admin@novabank.local").orElseGet(User::new);
+        admin.setEmail("admin@novabank.local");
+        admin.setPassword(passwordEncoder.encode("TestAdminPass123!"));
+        admin.setRoles(Set.of(Role.ADMIN));
+        admin.setIsActive(true);
+        admin.setMustChangePassword(false);
+        userRepository.save(admin);
     }
 
     @Test
