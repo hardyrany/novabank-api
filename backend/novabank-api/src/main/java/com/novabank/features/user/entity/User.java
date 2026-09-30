@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "must_change_password", nullable = false)
+    private Boolean mustChangePassword = false;
+
     @Column(nullable = false)
     private Boolean isActive = true;
 
