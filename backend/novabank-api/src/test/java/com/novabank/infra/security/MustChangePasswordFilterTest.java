@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.novabank.features.user.repository.UserRepository;
@@ -42,6 +44,19 @@ class MustChangePasswordFilterTest {
     @DisplayName("Should skip when there is no authentication")
     void doFilterInternal_NoAuthentication_ShouldSkip() throws Exception {
         SecurityContextHolder.clearContext();
+
+        filter.doFilterInternal(new MockHttpServletRequest(), new MockHttpServletResponse(),
+                filterChain);
+
+        verify(filterChain).doFilter(any(), any());
+        verify(userRepository, never()).findByEmailIgnoreCase(any());
+    }
+
+    @Test
+    @DisplayName("Should skip when authentication is anonymous")
+    void doFilterInternal_AnonymousAuthentication_ShouldSkip() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(new AnonymousAuthenticationToken("key",
+                "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS")));
 
         filter.doFilterInternal(new MockHttpServletRequest(), new MockHttpServletResponse(),
                 filterChain);
