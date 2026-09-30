@@ -296,5 +296,15 @@ class AuthServiceTest {
     }
 
     @Test
-    void changePassword_ShouldThrowUnauthorizedException_WhenNotAuthenticated() {}
+    void changePassword_ShouldThrowUnauthorizedException_WhenNotAuthenticated() {
+
+        // Arrange
+        SecurityContextHolder.clearContext();
+
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "newPassword456");
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+    }
 }
