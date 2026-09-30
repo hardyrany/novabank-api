@@ -6,9 +6,11 @@ import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
 import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.auth.service.AuthService;
+import com.novabank.features.user.dto.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +47,10 @@ public class AuthController {
         authService.changePassword(changePasswordRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getAuthenticatedUser() {
+        return ResponseEntity.ok(authService.getAuthenticatedUser());
     }
 }

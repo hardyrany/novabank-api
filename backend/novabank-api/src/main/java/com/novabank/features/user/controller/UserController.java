@@ -41,11 +41,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse> getAuthenticatedUser() {
-        return ResponseEntity.ok(userService.getAuthenticatedUser());
-    }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','SUPPORT')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {

@@ -2,6 +2,7 @@ package com.novabank.features.user.service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -67,9 +68,10 @@ public class UserService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null) {
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             throw new UnauthorizedException("No authenticated user found");
         }
+
         String email = authentication.getName();
 
         User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(

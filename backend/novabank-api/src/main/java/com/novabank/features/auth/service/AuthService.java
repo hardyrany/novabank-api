@@ -14,9 +14,11 @@ import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
 import com.novabank.features.auth.dto.RegisterResponse;
+import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.features.user.service.UserService;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
@@ -30,13 +32,16 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     public AuthService(AuthenticationManager authenticationManager, JwtService jwtService,
-            UserRepository userRepository, PasswordEncoder passwordEncoder) {
+            UserRepository userRepository, PasswordEncoder passwordEncoder,
+            UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @Transactional(readOnly = true)
@@ -103,5 +108,10 @@ public class AuthService {
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getAuthenticatedUser() {
+        return userService.getAuthenticatedUser();
     }
 }
