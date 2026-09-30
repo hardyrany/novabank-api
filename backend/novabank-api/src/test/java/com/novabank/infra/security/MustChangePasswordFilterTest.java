@@ -123,4 +123,20 @@ class MustChangePasswordFilterTest {
         verify(filterChain).doFilter(any(), any());
     }
 
+    @Test
+    @DisplayName("Should pass when user is not found (defensive)")
+    void doFilterInternal_UserNotFound_ShouldPass() throws Exception {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken("ghost@novabank.local",
+                        null, AuthorityUtils.createAuthorityList("ROLE_USER")));
+
+        when(userRepository.findByEmailIgnoreCase("ghost@novabank.local"))
+                .thenReturn(Optional.empty());
+
+        filter.doFilterInternal(new MockHttpServletRequest("GET", "/api/v1/accounts/1"),
+                new MockHttpServletResponse(), filterChain);
+
+        verify(filterChain).doFilter(any(), any());
+    }
+
 }
