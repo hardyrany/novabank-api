@@ -39,8 +39,11 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
     }
 
-    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
         authService.changePassword(changePasswordRequest);
-    }
 
+        return ResponseEntity.ok().build();
+    }
 }
