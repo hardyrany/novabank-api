@@ -224,5 +224,13 @@ class AuthServiceTest {
 
         // Act
         authService.changePassword(request);
+
+        // Assert
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("admin123", "$2b$12$encodedPassword");
+        verify(passwordEncoder).encode("newPassword456");
+        verify(userRepository).save(user);
+
+        assertEquals("$2b$12$newHashedPassword", user.getPassword());
     }
 }
