@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.auth.dto.ChangePasswordRequest;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
@@ -68,5 +69,10 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         return new RegisterResponse(savedUser.getEmail(), Role.USER.name());
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+
     }
 }
