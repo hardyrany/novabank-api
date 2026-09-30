@@ -30,6 +30,7 @@ import com.novabank.features.user.repository.UserRepository;
 import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -275,5 +276,17 @@ class AuthServiceTest {
     }
 
     @Test
-    void changePassword_ShouldThrowUnauthorizedException_WhenCurrentPasswordIsIncorrect() {}
+    void changePassword_ShouldThrowUnauthorizedException_WhenCurrentPasswordIsIncorrect() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("wrongPassword", "newPassword456", "newPassword456");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongPassword", user.getPassword())).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+    }
 }
