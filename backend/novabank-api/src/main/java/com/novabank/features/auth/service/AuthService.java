@@ -17,6 +17,7 @@ import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
 import com.novabank.infra.exception.UnauthorizedException;
@@ -91,5 +92,16 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new UnauthorizedException("Current password is incorrect");
         }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("New password and configuration password not match");
+        }
+
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new BusinessException("New password must be different from current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
