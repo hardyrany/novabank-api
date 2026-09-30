@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -60,6 +61,21 @@ class MustChangePasswordFilterTest {
 
         filter.doFilterInternal(new MockHttpServletRequest(), new MockHttpServletResponse(),
                 filterChain);
+
+        verify(filterChain).doFilter(any(), any());
+        verify(userRepository, never()).findByEmailIgnoreCase(any());
+    }
+
+    @Test
+    @DisplayName("Should skip when path is in the allow-list")
+    void doFilterInternal_AllowedPath_ShouldSkip() throws Exception {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken("admin@novabank.local",
+                        null, AuthorityUtils.createAuthorityList("ROLE_ADMIN")));
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/auth/me");
+
+        filter.doFilterInternal(request, new MockHttpServletResponse(), filterChain);
 
         verify(filterChain).doFilter(any(), any());
         verify(userRepository, never()).findByEmailIgnoreCase(any());
