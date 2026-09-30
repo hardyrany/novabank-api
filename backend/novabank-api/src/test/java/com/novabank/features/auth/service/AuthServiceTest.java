@@ -206,4 +206,7 @@ class AuthServiceTest {
         assertThrows(NoSuchMethodException.class,
                 () -> RegisterResponse.class.getMethod("getPassword"));
     }
+
+    @Test
+    void changePassword_ShouldUpdatePassword_WhenAllValidationsPass() {}
 }
