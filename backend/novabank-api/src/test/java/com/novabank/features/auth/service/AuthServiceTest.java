@@ -328,5 +328,11 @@ class AuthServiceTest {
 
         // Act
         UserResponse result = authService.getAuthenticatedUser();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+
+        verify(userService).getAuthenticatedUser();
     }
 }
