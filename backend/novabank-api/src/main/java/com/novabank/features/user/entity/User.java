@@ -94,6 +94,14 @@ public class User {
         this.password = password;
     }
 
+    public Boolean getMusChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
     public Boolean getIsActive() {
         return isActive;
     }
