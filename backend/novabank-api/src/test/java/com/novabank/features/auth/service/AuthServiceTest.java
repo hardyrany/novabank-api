@@ -272,6 +272,8 @@ class AuthServiceTest {
         verify(passwordEncoder).matches("admin123", "$2b$12$encodedPassword");
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
-
     }
+
+    @Test
+    void changePassword_ShouldThrowUnauthorizedException_WhenCurrentPasswordIsIncorrect() {}
 }
