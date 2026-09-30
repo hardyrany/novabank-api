@@ -6,6 +6,7 @@ import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
 import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.auth.service.AuthService;
+import com.novabank.features.user.dto.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,9 @@ public class AuthController {
         authService.changePassword(changePasswordRequest);
 
         return ResponseEntity.ok().build();
+    }
+
+    public UserResponse getAuthenticatedUser() {
+        return null;
     }
 }
