@@ -63,6 +63,10 @@ class AuthServiceTest {
         user.setRoles(Set.of(Role.ADMIN));
 
         token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBub3ZhYmFuay5jb20ifQ.abc123";
+
+        // Populate SecurityContextHolder with authenticated user
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin@novabank.com", null));
     }
 
     @AfterEach
