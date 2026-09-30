@@ -311,4 +311,7 @@ class AuthServiceTest {
         verify(passwordEncoder, never()).matches(anyString(), anyString());
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    void getAuthenticatedUser_ShouldReturnUserResponse() {}
 }
