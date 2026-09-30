@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -92,6 +93,20 @@ public class GlobalExceptionHandler {
                 .path(request.getDescription(false)).timestamp(LocalDateTime.now()).build();
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatchException(
+            MethodArgumentTypeMismatchException exception, WebRequest request) {
+
+        String message = "Invalid value '" + exception.getValue() + "' for parameter '"
+                + exception.getName() + "'";
+
+        ErrorResponse response = ErrorResponse.builder().message(message)
+                .status(HttpStatus.BAD_REQUEST.value()).error("Bad Request")
+                .path(request.getDescription(false)).timestamp(LocalDateTime.now()).build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
