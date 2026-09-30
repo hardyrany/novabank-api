@@ -233,4 +233,7 @@ class AuthServiceTest {
 
         assertEquals("$2b$12$newHashedPassword", user.getPassword());
     }
+
+    @Test
+    void changePassword_ShouldThrowBusinessException_WhenNewAndConfirmDoNotMatch() {}
 }
