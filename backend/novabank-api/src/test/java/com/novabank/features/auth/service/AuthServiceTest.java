@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.novabank.features.auth.dto.ChangePasswordRequest;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
@@ -25,8 +27,10 @@ import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -62,6 +66,15 @@ class AuthServiceTest {
         user.setRoles(Set.of(Role.ADMIN));
 
         token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBub3ZhYmFuay5jb20ifQ.abc123";
+
+        // Populate SecurityContextHolder with authenticated user
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin@novabank.com", null));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -195,5 +208,107 @@ class AuthServiceTest {
         // The response class must NOT have a password field
         assertThrows(NoSuchMethodException.class,
                 () -> RegisterResponse.class.getMethod("getPassword"));
+    }
+
+    @Test
+    void changePassword_ShouldUpdatePassword_WhenAllValidationsPass() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "newPassword456");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode("newPassword456")).thenReturn("$2b$12$newHashedPassword");
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        authService.changePassword(request);
+
+        // Assert
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("admin123", "$2b$12$encodedPassword");
+        verify(passwordEncoder).encode("newPassword456");
+        verify(userRepository).save(user);
+
+        assertEquals("$2b$12$newHashedPassword", user.getPassword());
+    }
+
+    @Test
+    void changePassword_ShouldThrowBusinessException_WhenNewAndConfirmDoNotMatch() {
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "differentPassword789");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> authService.changePassword(request));
+
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("admin123", "$2b$12$encodedPassword");
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void changePassword_ShouldThrowBusinessException_WhenNewEqualsCurrent() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "admin123", "admin123");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> authService.changePassword(request));
+
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("admin123", "$2b$12$encodedPassword");
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void changePassword_ShouldThrowUnauthorizedException_WhenCurrentPasswordIsIncorrect() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("wrongPassword", "newPassword456", "newPassword456");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongPassword", user.getPassword())).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("wrongPassword", "$2b$12$encodedPassword");
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void changePassword_ShouldThrowUnauthorizedException_WhenNotAuthenticated() {
+
+        // Arrange
+        SecurityContextHolder.clearContext();
+
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "newPassword456");
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+
+        verify(userRepository, never()).findByEmailIgnoreCase(anyString());
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(userRepository, never()).save(any(User.class));
     }
 }

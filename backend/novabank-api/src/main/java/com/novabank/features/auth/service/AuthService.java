@@ -4,9 +4,12 @@ import java.util.Comparator;
 import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.auth.dto.ChangePasswordRequest;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
@@ -14,8 +17,10 @@ import com.novabank.features.auth.dto.RegisterResponse;
 import com.novabank.features.user.entity.User;
 import com.novabank.features.user.enums.Role;
 import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
 import com.novabank.infra.exception.ConflictException;
 import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
 
 @Service
 @Transactional
@@ -68,5 +73,35 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         return new RegisterResponse(savedUser.getEmail(), Role.USER.name());
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new UnauthorizedException("No authenticated user found");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+                () -> new UnauthorizedException("User not found with email: " + email));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("New password and configuration password not match");
+        }
+
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new BusinessException("New password must be different from current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
