@@ -19,11 +19,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final MustChangePasswordFilter mustChangePasswordFilter;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            MustChangePasswordFilter mustChangePasswordFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.mustChangePasswordFilter = mustChangePasswordFilter;
     }
 
     @Bean
@@ -49,7 +52,9 @@ public class SecurityConfig {
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                        UsernamePasswordAuthenticationFilter.class)
+
+                .addFilterAfter(mustChangePasswordFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
