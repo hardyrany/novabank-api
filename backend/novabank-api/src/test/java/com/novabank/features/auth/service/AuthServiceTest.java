@@ -288,5 +288,10 @@ class AuthServiceTest {
 
         // Act & Assert
         assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+
+        verify(userRepository).findByEmailIgnoreCase("admin@novabank.com");
+        verify(passwordEncoder).matches("wrongPassword", "$2b$12$encodedPassword");
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
     }
 }
