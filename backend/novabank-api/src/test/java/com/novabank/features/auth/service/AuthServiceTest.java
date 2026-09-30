@@ -19,6 +19,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.novabank.features.auth.dto.ChangePasswordRequest;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
@@ -208,5 +209,20 @@ class AuthServiceTest {
     }
 
     @Test
-    void changePassword_ShouldUpdatePassword_WhenAllValidationsPass() {}
+    void changePassword_ShouldUpdatePassword_WhenAllValidationsPass() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "newPassword456", "newPassword456");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode("newPassword456")).thenReturn("$2b$12$newHashedPassword");
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        authService.changePassword(request);
+    }
 }
