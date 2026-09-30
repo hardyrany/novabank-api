@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
@@ -62,6 +63,11 @@ class AuthServiceTest {
         user.setRoles(Set.of(Role.ADMIN));
 
         token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBub3ZhYmFuay5jb20ifQ.abc123";
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
