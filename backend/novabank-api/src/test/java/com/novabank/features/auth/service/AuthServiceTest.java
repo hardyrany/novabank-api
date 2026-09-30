@@ -255,5 +255,17 @@ class AuthServiceTest {
     }
 
     @Test
-    void changePassword_ShouldThrowBusinessException_WhenNewEqualsCurrent() {}
+    void changePassword_ShouldThrowBusinessException_WhenNewEqualsCurrent() {
+
+        // Arrange
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("admin123", "admin123", "admin123");
+
+        when(userRepository.findByEmailIgnoreCase("admin@novabank.com"))
+                .thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("admin123", user.getPassword())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> authService.changePassword(request));
+    }
 }
