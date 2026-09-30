@@ -1,9 +1,18 @@
 package com.novabank.features.auth.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class ChangePasswordRequest {
 
+    @NotBlank(message = "Current password is required")
     private String currentPassword;
+
+    @NotBlank(message = "New Password is required")
+    @Size(min = 8, max = 72, message = "New password must be between 8 and 72 characters")
     private String newPassword;
+
+    @NotBlank(message = "Configuration password is required")
     private String confirmPassword;
 
     public ChangePasswordRequest() {}
