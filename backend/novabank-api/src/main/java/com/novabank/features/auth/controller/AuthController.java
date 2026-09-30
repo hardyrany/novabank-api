@@ -1,5 +1,6 @@
 package com.novabank.features.auth.controller;
 
+import com.novabank.features.auth.dto.ChangePasswordRequest;
 import com.novabank.features.auth.dto.LoginRequest;
 import com.novabank.features.auth.dto.LoginResponse;
 import com.novabank.features.auth.dto.RegisterRequest;
@@ -36,6 +37,10 @@ public class AuthController {
         RegisterResponse registerResponse = authService.register(registerRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
+    }
+
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        authService.changePassword(changePasswordRequest);
     }
 
 }
