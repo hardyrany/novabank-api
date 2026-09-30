@@ -4,46 +4,23 @@
 
 ## Project Status
 
-**Current Version:** `v0.3.2`
+**Current Version:** `v0.4.0` — Functionally complete MVP with authentication, RBAC and ownership validation (Phase 8.1, without scalability).
 
-**Phase:** Functionally Complete MVP (Phase 8 — Authentication + Authorization)
-
-**Checkpoint:** MVP with authentication, authorization and ownership validation (without scalability)
-
-| Feature | Status |
-|---|---|
-| Customer Create | ✅ Complete |
-| Account Create | ✅ Complete |
-| Account View | ✅ Complete |
-| Transaction Ledger | ✅ Complete |
-| Account Deposit | ✅ Complete |
-| Account Withdraw | ✅ Complete |
-| Transaction History | ✅ Complete |
-| Transfer Between Accounts | ✅ Complete |
-| User Create | ✅ Complete |
-| Auth Login (JWT) | ✅ Complete |
-| Auth Protect Endpoints | ✅ Complete |
-| Transfer Ownership Check | ✅ Complete |
+- **Core banking:** customer create, account create/view, transaction ledger, deposit, withdraw, transaction history, transfer between accounts
+- **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me), roles ADMIN / SUPPORT / USER, reusable ownership validation (including transfer source)
 
 ---
 
 ## Technologies
 
-| Technology | Version |
-|---|---|
-| Java | 21 |
-| Spring Boot | 4.1.1 |
-| Spring Boot Actuator | - |
-| Spring Data JPA | - |
-| Spring Security | - |
-| Spring Boot Starter Security | - |
-| JJWT (JWT) | 0.12.6 |
-| Flyway | - |
-| PostgreSQL | 16.15 |
-| Maven | - |
-| Mockito | - |
-| JUnit 5 | - |
-| OpenAPI (Swagger) | 3.1.1 |
+- Java 21
+- Spring Boot 4.1.1 (Web, Actuator, Data JPA, Security)
+- JJWT 0.12.6
+- Flyway
+- PostgreSQL 16.15
+- Maven
+- JUnit 5 and Mockito
+- OpenAPI (Swagger) 3.1.1
 
 ### Code Quality & Security
 
@@ -57,67 +34,26 @@
 
 ## Project Structure
 
-```
+```text
 novabank/
-├── backend/
-│   └── novabank-api/
-│       ├── src/
-│       │   ├── main/
-│       │   │   ├── java/com/novabank/
-│       │   │   │   ├── features/
-│       │   │   │   │   ├── account/
-│       │   │   │   │   │   ├── controller/
-│       │   │   │   │   │   ├── dto/
-│       │   │   │   │   │   ├── entity/
-│       │   │   │   │   │   ├── mapper/
-│       │   │   │   │   │   ├── repository/
-│       │   │   │   │   │   └── service/
-│       │   │   │   │   ├── auth/
-│       │   │   │   │   │   ├── controller/
-│       │   │   │   │   │   ├── dto/
-│       │   │   │   │   │   └── service/
-│       │   │   │   │   ├── customer/
-│       │   │   │   │   ├── health/
-│       │   │   │   │   ├── transaction/
-│       │   │   │   │   ├── transfer/
-│       │   │   │   │   └── user/
-│       │   │   │   ├── infra/
-│       │   │   │   │   ├── config/
-│       │   │   │   │   │   ├── OpenApiConfig.java
-│       │   │   │   │   │   └── WebConfig.java
-│       │   │   │   │   ├── exception/
-│       │   │   │   │   │   ├── BusinessException.java
-│       │   │   │   │   │   ├── ConflictException.java
-│       │   │   │   │   │   ├── ErrorResponse.java
-│       │   │   │   │   │   ├── ForbiddenException.java
-│       │   │   │   │   │   ├── GlobalExceptionHandler.java
-│       │   │   │   │   │   ├── ResourceNotFoundException.java
-│       │   │   │   │   │   └── UnauthorizedException.java
-│       │   │   │   │   └── security/
-│       │   │   │   │       ├── JwtAuthenticationEntryPoint.java
-│       │   │   │   │       ├── JwtAuthenticationFilter.java
-│       │   │   │   │       ├── SecurityConfig.java
-│       │   │   │   │       └── UserDetailsServiceImpl.java
-│       │   │   │   └── NovabankApiApplication.java
-│       │   │   └── resources/
-│       │   │       ├── application.yml
-│       │   │       ├── application-dev.yml
-│       │   │       └── application-test.yml
-│       │   └── test/
-│       └── pom.xml
-├── database/
-│   └── migration/
-│       ├── V1__create_customers_table.sql
-│       ├── V2__create_accounts_table.sql
-│       ├── V3__alter_customers_add_constraints.sql
-│       ├── V4__alter_accounts_add_constraints.sql
-│       ├── V5__create_transactions_schema.sql
-│       ├── V6__create_users_table.sql
-│       └── V7__align_users_email_case_insensitive.sql
+├── backend/novabank-api/      # Spring Boot application (pom.xml, src/main, src/test)
+│   └── src/main/java/com/novabank/
+│       ├── features/          # One package per feature
+│       │   ├── account/       # e.g. controller, dto, entity, mapper, repository, service
+│       │   ├── auth/          # login, registration, admin bootstrap runner
+│       │   ├── customer/
+│       │   ├── health/
+│       │   ├── transaction/
+│       │   ├── transfer/
+│       │   └── user/
+│       └── infra/             # Cross-cutting concerns
+│           ├── config/        # OpenAPI and web configuration
+│           ├── exception/     # Business exceptions and global handler
+│           └── security/      # JWT filter, security config, OwnershipValidator
+├── database/migration/        # Flyway migrations (V1–V7)
 ├── docs/
 ├── project-evolution/
 ├── .env.example
-├── .gitignore
 ├── docker-compose.yml
 └── README.md
 ```
@@ -136,16 +72,16 @@ novabank/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/novabank.git
+git clone https://github.com/hardyrany/novabank.git
 cd novabank
 
 # 2. Configure environment variables (TWO files required)
 cp .env.example .env
 cp .env.example backend/novabank-api/.env
 # edit BOTH files with your local database credentials
-# variables: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DB_USERNAME, DB_PASSWORD, DB_NAME
+# variables: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DB_USERNAME, DB_PASSWORD, DB_NAME, ADMIN_EMAIL, ADMIN_PASSWORD
 
-# 3. Start the database
+# 3. Start the database (PostgreSQL on port 5433)
 docker-compose up -d
 
 # 4. Run the application
@@ -163,58 +99,71 @@ Two `.env` files are required:
 
 Both must have the same database credentials.
 
+PostgreSQL is exposed on host port **5433** (container port 5432) to avoid conflicts with local installations.
+
 ---
 
-## Available Endpoints (v0.3.0)
+## Available Endpoints (v0.4.0)
+
+The full, interactive reference is available in Swagger UI (see [API Documentation](#api-documentation)).
 
 ### Auth
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/v1/auth/login` | Login and obtain JWT | Public |
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/v1/auth/login` | Public |
+| POST | `/api/v1/auth/register` (creates role USER) | Public |
 
 ### User
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/v1/users` | Create a new user | Public |
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/v1/users` | ADMIN |
+| GET | `/api/v1/users` | ADMIN, SUPPORT |
+| GET | `/api/v1/users/{id}` | ADMIN, SUPPORT |
+| GET | `/api/v1/users/me` | Any authenticated |
 
 ### Customer
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/v1/customers` | Create a new customer | JWT |
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/v1/customers` | ADMIN, SUPPORT |
+| GET | `/api/v1/customers` | ADMIN, SUPPORT |
+| GET | `/api/v1/customers/{id}` | ADMIN, SUPPORT |
+| PUT | `/api/v1/customers/{id}` | ADMIN, SUPPORT |
+| PATCH | `/api/v1/customers/{id}/deactivate` | ADMIN, SUPPORT |
+| PATCH | `/api/v1/customers/{id}/activate` | ADMIN, SUPPORT |
 
 ### Account
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/v1/accounts` | Create a new account | JWT |
-| GET | `/api/v1/accounts/{id}` | Get account by ID | JWT |
-| GET | `/api/v1/accounts/account-number/{accountNumber}` | Get account by number | JWT |
-| GET | `/api/v1/accounts/customer/{customerId}` | List customer accounts | JWT |
-| GET | `/api/v1/accounts/active` | List active accounts | JWT |
-| GET | `/api/v1/accounts/{id}/balance` | Get account balance | JWT |
-| GET | `/api/v1/accounts/customer/{customerId}/account-summary` | Customer financial summary | JWT |
-| PUT | `/api/v1/accounts/{id}` | Update account | JWT |
-| DELETE | `/api/v1/accounts/{id}` | Deactivate account (soft delete) | JWT |
-| PATCH | `/api/v1/accounts/{id}/activate` | Reactivate account | JWT |
-| POST | `/api/v1/accounts/{id}/deposit` | Deposit into account | JWT |
-| POST | `/api/v1/accounts/{id}/withdraw` | Withdraw from account | JWT |
-| GET | `/api/v1/accounts/{id}/transactions` | Transaction history | JWT |
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/v1/accounts` | ADMIN, SUPPORT |
+| GET | `/api/v1/accounts/active` | ADMIN, SUPPORT |
+| GET | `/api/v1/accounts/account-number/{accountNumber}` | ADMIN, SUPPORT |
+| PUT | `/api/v1/accounts/{id}` | ADMIN, SUPPORT |
+| DELETE | `/api/v1/accounts/{id}` (soft delete) | ADMIN, SUPPORT |
+| PATCH | `/api/v1/accounts/{id}/activate` | ADMIN, SUPPORT |
+| GET | `/api/v1/accounts/{id}` | ADMIN, SUPPORT, USER (own) |
+| GET | `/api/v1/accounts/{id}/balance` | ADMIN, SUPPORT, USER (own) |
+| GET | `/api/v1/accounts/{id}/transactions` | ADMIN, SUPPORT, USER (own) |
+| POST | `/api/v1/accounts/{id}/deposit` | ADMIN, SUPPORT, USER (own) |
+| POST | `/api/v1/accounts/{id}/withdraw` | ADMIN, SUPPORT, USER (own) |
+| GET | `/api/v1/accounts/customer/{customerId}` | ADMIN, SUPPORT, USER (own) |
+| GET | `/api/v1/accounts/customer/{customerId}/account-summary` | ADMIN, SUPPORT, USER (own) |
 
 ### Transfer
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/v1/transfers` | Transfer between accounts (validates ownership) | JWT |
+| Method | Endpoint | Auth |
+|---|---|---|
+| POST | `/api/v1/transfers` (ownership validated on the source account) | ADMIN, SUPPORT, USER (own source) |
 
 ### Health
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| GET | `/api/v1/health` | Application health | Public |
-| GET | `/actuator/health` | Actuator health | Public |
+| Method | Endpoint | Auth |
+|---|---|---|
+| GET | `/api/v1/health` | Public |
+| GET | `/actuator/health` | Public |
 
 ---
 
@@ -222,104 +171,67 @@ Both must have the same database credentials.
 
 The API uses JWT (JSON Web Token) for authentication.
 
-### Flow
-
-1. Create a user: `POST /api/v1/users`
-2. Login: `POST /api/v1/auth/login` → returns JWT token
-3. Use the token in subsequent requests: `Authorization: Bearer <token>`
-
-### Creating an Admin User
-
-`POST /api/v1/users` is public, so the first ADMIN user can be created directly by passing `"role":"ADMIN"` in the request body:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Admin","email":"admin@novabank.com","password":"password","role":"ADMIN"}'
-```
-
-Then log in with the same credentials to obtain a JWT for the protected endpoints (see the login example below).
-
-> Field names (`name`, `role`, etc.) should match the actual `UserRequestDTO` — adjust if the fields differ.
-
-### Example
+1. Register (`POST /api/v1/auth/register`, public) or use existing credentials
+2. Login: `POST /api/v1/auth/login` returns a JWT
+3. Send the token on subsequent requests: `Authorization: Bearer <token>`
 
 ```bash
 # Login
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"password"}'
+  -d '{"email":"user@example.com","password":"password123"}'
 
 # Response
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "email": "user@example.com",
-  "role": "ADMIN"
+  "role": "USER"
 }
 
 # Use token
-curl http://localhost:8080/api/v1/accounts/1 \
+curl http://localhost:8080/api/v1/accounts/<account-uuid> \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
 ```
 
-### Authorization
+### Authorization (RBAC)
 
-- **Ownership validation:** transfers require that the source account belongs to the authenticated customer
-- **Roles:** `ADMIN`, `USER`, `SUPPORT`
+The API enforces role-based access control with three roles:
+
+| Role | Capabilities |
+|---|---|
+| ADMIN | Manage users (create with any role), view users, manage customers and accounts |
+| SUPPORT | View users, manage customers and accounts, execute deposits/withdrawals/transfers on any account |
+| USER | View and operate only their own accounts |
+
+**Ownership validation:** a USER can only access their own accounts. ADMIN and SUPPORT have unrestricted access.
+
+**Bootstrap:** the first ADMIN is created on application startup via `AdminBootstrapRunner`, reading `ADMIN_EMAIL` and `ADMIN_PASSWORD` from environment variables (12-Factor App).
 
 ---
 
-## Flyway Migrations
+## Database Migrations
 
-| Migration | Description |
-|---|---|
-| V1 | Create customers table |
-| V2 | Create accounts table |
-| V3 | Add constraints to customers (case-insensitive email) |
-| V4 | Add constraints to accounts (optimistic locking, balance check) |
-| V5 | Create transactions schema |
-| V6 | Create users table |
-| V7 | Align users.email case-insensitive |
+Managed by Flyway. Migration scripts (V1–V7) live in `database/migration/`, covering customers, accounts (optimistic locking, balance check), transactions and users (case-insensitive email).
 
 ---
 
 ## Tests
 
-### Test Coverage
+The project has ~98 tests (unit tests for services, filter and bootstrap runner, plus integration tests).
 
-| Module | Tests | Status |
-|---|---|---|
-| Customer Service | 19 tests | ✅ |
-| Account Service | 22 tests | ✅ |
-| Account Controller | Integration tests | ✅ |
-| Account Entity (optimistic locking) | 1 test | ✅ |
-| Transaction Service | 5 tests | ✅ |
-| Transfer Service | 8 tests | ✅ |
-| Auth Service | 4 tests | ✅ |
-| User Service | 3 tests | ✅ |
-| JWT Authentication Filter | 4 tests | ✅ |
-| MVP Integration Test | 1 test | ✅ |
-| **Total** | **~69 tests** | ✅ |
+Two end-to-end integration tests validate the complete flows:
 
-### End-to-End Test
-
-The project includes an end-to-end integration test (`MVPIntegrationTest`) that validates the complete flow with JWT authentication:
-
-1. Create user
-2. Login (obtain JWT)
-3. Create customer
-4. Create account
-5. Deposit
-6. Transfer
-7. View transaction history
+- **`MVPIntegrationTest`** — full MVP flow with JWT: create user, login, create customer, create account, deposit, transfer, view transaction history
+- **`RbacIntegrationTest`** — RBAC matrix (401/403/200/201) for all three roles: user management, customer management, account access, ownership on deposits and transfers
 
 ```bash
 ./mvnw test -Dtest=MVPIntegrationTest
+./mvnw test -Dtest=RbacIntegrationTest
 ```
 
 ### Full Verification (with Dependency Check)
 
-To run the complete build used in CI — tests plus OWASP Dependency-Check against the NVD database — export an NVD API key first (request one here):
+To run the complete build used in CI — tests plus OWASP Dependency-Check against the NVD database — export an NVD API key first ([request one here](https://nvd.nist.gov/developers/request-an-api-key)):
 
 ```bash
 export NVD_API_KEY=your-nvd-api-key
@@ -330,26 +242,16 @@ export NVD_API_KEY=your-nvd-api-key
 
 ## API Documentation
 
-Interactive API documentation is available at:
-
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 Use the **Authorize** button in Swagger UI to provide your JWT token and test protected endpoints.
 
 ---
 
-## Release Tags
+## Releases
 
-| Tag | Description |
-|---|---|
-| v0.1.0 | Partial MVP — customer-create, account-create, account-view, transaction-ledger |
-| v0.2.0 | Functionally complete MVP — deposit, withdraw, history, transfer |
-| v0.3.0 | MVP with authentication, authorization and ownership validation |
-| v0.3.1 | Docs and repo hygiene — CHANGELOG/LICENSE naming fixes, `.env.example` added |
-| v0.3.2 | Docs — how to create the first Admin user |
-
-See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
+Current version: **v0.4.0** — MVP with authentication + RBAC. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
 
 ---
 
@@ -357,6 +259,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
 
 | Phase | Description |
 |---|---|
+| 8.1.1 | Password management (change, reset, must-change-password) |
 | Scalability | Pagination, filters, lazy loading (all modules) |
 | Phase 9+ | Backlog (limit, loan, notification, report) |
 | v1.0.0 | First real release — MVP complete + scalable |
@@ -365,4 +268,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for details on what changed in each version.
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](./LICENSE) for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
