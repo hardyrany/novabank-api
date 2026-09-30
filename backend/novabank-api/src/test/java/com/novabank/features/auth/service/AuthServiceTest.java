@@ -306,5 +306,9 @@ class AuthServiceTest {
 
         // Act & Assert
         assertThrows(UnauthorizedException.class, () -> authService.changePassword(request));
+
+        verify(userRepository, never()).findByEmailIgnoreCase(anyString());
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(userRepository, never()).save(any(User.class));
     }
 }
