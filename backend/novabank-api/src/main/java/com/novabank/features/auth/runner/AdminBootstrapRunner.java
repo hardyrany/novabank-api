@@ -44,6 +44,7 @@ public class AdminBootstrapRunner implements ApplicationRunner {
         admin.setPassword(passwordEncoder.encode(adminPassword));
         admin.setRoles(Set.of(Role.ADMIN));
         admin.setIsActive(true);
+        admin.setMustChangePassword(true);
 
         userRepository.save(admin);
     }
