@@ -1,5 +1,6 @@
 package com.novabank.features.user.service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -8,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.user.dto.ResetPasswordResponse;
 import com.novabank.features.user.dto.UserRequest;
 import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.entity.User;
@@ -66,6 +68,31 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getAuthenticatedUser() {
 
+        return userMapper.toResponse(getAuthenticatedUserEntity());
+    }
+
+    public ResetPasswordResponse resetPassword(UUID id) {
+
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        User currentAdmin = getAuthenticatedUserEntity();
+
+        if (currentAdmin.getId().equals(target.getId())) {
+            throw new BusinessException("Admin cannot reset their own password");
+        }
+
+        String temporaryPassword = generateTemporaryPassword();
+
+        target.setPassword(passwordEncoder.encode(temporaryPassword));
+        target.setMustChangePassword(true);
+        userRepository.save(target);
+
+        return new ResetPasswordResponse(temporaryPassword);
+    }
+
+    private User getAuthenticatedUserEntity() {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
@@ -74,9 +101,22 @@ public class UserService {
 
         String email = authentication.getName();
 
-        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+        return userRepository.findByEmailIgnoreCase(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not found with email: " + email));
+    }
 
-        return userMapper.toResponse(user);
+    private String generateTemporaryPassword() {
+
+        final String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+
+        final int length = 12;
+        SecureRandom radom = new SecureRandom();
+        StringBuilder stringBuilder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            stringBuilder.append(alphabet.charAt(radom.nextInt(alphabet.length())));
+        }
+
+        return stringBuilder.toString();
     }
 }
