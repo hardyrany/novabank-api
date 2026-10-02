@@ -253,4 +253,17 @@ class UserServiceTest {
         verify(userRepository).findByEmailIgnoreCase(email);
         verify(userMapper, never()).toResponse(any(User.class));
     }
+
+    @Test
+    void resetPassword_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        // Arrange
+        UUID targetId = UUID.randomUUID();
+        when(userRepository.findById(targetId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.resetPassword(targetId));
+
+        verify(userRepository).findById(targetId);
+        verify(userRepository, never()).save(any(User.class));
+    }
 }
