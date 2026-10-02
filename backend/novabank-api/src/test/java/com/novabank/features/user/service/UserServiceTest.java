@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import com.novabank.features.user.dto.ResetPasswordResponse;
 import com.novabank.features.user.dto.UserRequest;
 import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.entity.User;
@@ -283,5 +283,44 @@ class UserServiceTest {
         verify(userRepository).findById(user.getId());
         verify(userRepository).findByEmailIgnoreCase(email);
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void resetPassword_ShouldReturnTemporaryPassword_WhenSuccessful() {
+        // Arrange
+        String adminEmail = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(adminEmail, null));
+
+        User admin = new User();
+        admin.setId(UUID.randomUUID());
+        admin.setEmail(adminEmail);
+
+        User target = new User();
+        target.setId(UUID.randomUUID());
+        target.setEmail("target@novabank.com");
+        target.setPassword("oldPassword");
+        target.setMustChangePassword(false);
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(userRepository.findByEmailIgnoreCase(adminEmail)).thenReturn(Optional.of(admin));
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedTempPassword");
+
+        // Act
+        ResetPasswordResponse result = userService.resetPassword(target.getId());
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getTemporaryPassword());
+        assertFalse(result.getTemporaryPassword().isBlank());
+        assertEquals(12, result.getTemporaryPassword().length());
+
+        assertEquals("encodedTempPassword", target.getPassword());
+        assertTrue(target.getMustChangePassword());
+
+        verify(userRepository).findById(target.getId());
+        verify(userRepository).findByEmailIgnoreCase(adminEmail);
+        verify(passwordEncoder).encode(anyString());
+        verify(userRepository).save(target);
     }
 }
