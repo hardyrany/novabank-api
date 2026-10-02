@@ -1,5 +1,6 @@
 package com.novabank.features.user.service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -81,9 +82,14 @@ public class UserService {
             throw new BusinessException("Admin cannot reset their own password");
         }
 
-        return null;
-    }
+        String temporaryPassword = generateTemporaryPassword();
 
+        target.setPassword(passwordEncoder.encode(temporaryPassword));
+        target.setMustChangePassword(true);
+        userRepository.save(target);
+
+        return new ResetPasswordResponse(temporaryPassword);
+    }
 
     private User getAuthenticatedUserEntity() {
 
@@ -97,5 +103,20 @@ public class UserService {
 
         return userRepository.findByEmailIgnoreCase(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not found with email: " + email));
+    }
+
+    private String generateTemporaryPassword() {
+
+        final String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+
+        final int length = 12;
+        SecureRandom radom = new SecureRandom();
+        StringBuilder stringBuilder = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            stringBuilder.append(alphabet.charAt(radom.nextInt(alphabet.length())));
+        }
+
+        return stringBuilder.toString();
     }
 }
