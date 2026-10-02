@@ -26,9 +26,9 @@ public class CustomerAccountSummary {
         this.totalAccounts = totalAccounts;
         this.activeAccounts = activateAccounts;
         this.inactiveAccounts = inactiveAccounts;
-    this.balanceByCurrency = balanceByCurrency != null ? Map.copyOf(balanceByCurrency) : Map.of();
-    this.accountTypes = accountTypes != null ? Map.copyOf(accountTypes) : Map.of();
-
+        this.balanceByCurrency =
+                balanceByCurrency != null ? Map.copyOf(balanceByCurrency) : Map.of();
+        this.accountTypes = accountTypes != null ? Map.copyOf(accountTypes) : Map.of();
     }
 
 
