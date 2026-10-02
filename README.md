@@ -4,11 +4,12 @@
 
 ## Project Status
 
-**Current Version:** `v0.4.1` — MVP with authentication, RBAC, ownership validation and password management (Phase 8.1.1, without scalability).
+**Current Version:** `v0.4.1` — MVP with authentication, RBAC, ownership validation, password management and pagination.
 
 - **Core banking:** customer create, account create/view, transaction ledger, deposit, withdraw, transaction history, transfer between accounts
 - **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me via `/auth/me`), roles ADMIN / SUPPORT / USER, reusable ownership validation (including transfer source)
 - **Password management:** change own password (`/auth/change-password`), force change on first login / admin reset (`mustChangePassword`), admin reset of another user's password (`/users/{id}/reset-password`)
+- **Pagination:** all list endpoints accept `?page=&size=&sort=` and return `PageResponse<T>`
 
 ---
 
@@ -49,6 +50,7 @@ novabank/
 │       │   └── user/          # user management + reset-password
 │       └── infra/             # Cross-cutting concerns
 │           ├── config/        # OpenAPI and web configuration
+│           ├── dto/           # Transversal DTOs (PageResponse)
 │           ├── exception/     # Business exceptions and global handler
 │           └── security/      # JWT filter, MustChangePassword filter, security config, OwnershipValidator
 ├── database/migration/        # Flyway migrations (V1–V8)
@@ -108,6 +110,8 @@ PostgreSQL is exposed on host port **5433** (container port 5432) to avoid confl
 
 The full, interactive reference is available in Swagger UI (see [API Documentation](#api-documentation)).
 
+> **List endpoints** (marked with 🔢) accept `?page=&size=&sort=` and return a `PageResponse<T>` object. See [Pagination](#pagination).
+
 ### Auth
 
 | Method | Endpoint | Auth |
@@ -122,7 +126,7 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | Method | Endpoint | Auth |
 |---|---|---|
 | POST | `/api/v1/users` | ADMIN |
-| GET | `/api/v1/users` | ADMIN, SUPPORT |
+| 🔢 GET | `/api/v1/users` | ADMIN, SUPPORT |
 | GET | `/api/v1/users/{id}` | ADMIN, SUPPORT |
 | POST | `/api/v1/users/{id}/reset-password` (generates a temporary password, forces change on next request) | ADMIN |
 
@@ -133,7 +137,8 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | Method | Endpoint | Auth |
 |---|---|---|
 | POST | `/api/v1/customers` | ADMIN, SUPPORT |
-| GET | `/api/v1/customers` | ADMIN, SUPPORT |
+| 🔢 GET | `/api/v1/customers` | ADMIN, SUPPORT |
+| 🔢 GET | `/api/v1/customers/search?name={name}` | ADMIN, SUPPORT |
 | GET | `/api/v1/customers/{id}` | ADMIN, SUPPORT |
 | PUT | `/api/v1/customers/{id}` | ADMIN, SUPPORT |
 | PATCH | `/api/v1/customers/{id}/deactivate` | ADMIN, SUPPORT |
@@ -144,17 +149,17 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | Method | Endpoint | Auth |
 |---|---|---|
 | POST | `/api/v1/accounts` | ADMIN, SUPPORT |
-| GET | `/api/v1/accounts/active` | ADMIN, SUPPORT |
+| 🔢 GET | `/api/v1/accounts/active` | ADMIN, SUPPORT |
 | GET | `/api/v1/accounts/account-number/{accountNumber}` | ADMIN, SUPPORT |
 | PUT | `/api/v1/accounts/{id}` | ADMIN, SUPPORT |
 | DELETE | `/api/v1/accounts/{id}` (soft delete) | ADMIN, SUPPORT |
 | PATCH | `/api/v1/accounts/{id}/activate` | ADMIN, SUPPORT |
 | GET | `/api/v1/accounts/{id}` | ADMIN, SUPPORT, USER (own) |
 | GET | `/api/v1/accounts/{id}/balance` | ADMIN, SUPPORT, USER (own) |
-| GET | `/api/v1/accounts/{id}/transactions` | ADMIN, SUPPORT, USER (own) |
+| 🔢 GET | `/api/v1/accounts/{id}/transactions` | ADMIN, SUPPORT, USER (own) |
 | POST | `/api/v1/accounts/{id}/deposit` | ADMIN, SUPPORT, USER (own) |
 | POST | `/api/v1/accounts/{id}/withdraw` | ADMIN, SUPPORT, USER (own) |
-| GET | `/api/v1/accounts/customer/{customerId}` | ADMIN, SUPPORT, USER (own) |
+| 🔢 GET | `/api/v1/accounts/customer/{customerId}` | ADMIN, SUPPORT, USER (own) |
 | GET | `/api/v1/accounts/customer/{customerId}/account-summary` | ADMIN, SUPPORT, USER (own) |
 
 ### Transfer
@@ -225,6 +230,39 @@ The API enforces a "must change password" rule on top of authentication:
 - `MustChangePasswordFilter` (servlet filter, runs after `JwtAuthenticationFilter`) — blocks non-allow-listed endpoints when the flag is active.
 - `AuthService.changePassword` — validates the current password and clears the flag on success.
 
+### Pagination
+
+All list endpoints accept pagination query parameters:
+
+| Param | Default | Description |
+|-------|---------|-------------|
+| `page` | `0` | Page index (zero-based) |
+| `size` | `20` | Page size |
+| `sort` | (varies) | Field name; direction via `?sort=field,asc\|desc` |
+
+**Response shape (`PageResponse<T>`):**
+
+```json
+{
+  "content": [ ... ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 42,
+  "totalPages": 3,
+  "first": true,
+  "last": false
+}
+```
+
+**Paginated endpoints:** `GET /customers`, `GET /customers/search`, `GET /accounts/active`, `GET /accounts/customer/{customerId}`, `GET /accounts/{id}/transactions`, `GET /users`.
+
+**Example:**
+
+```bash
+curl "http://localhost:8080/api/v1/customers?page=0&size=10&sort=id" \
+  -H "Authorization: Bearer <token>"
+```
+
 ---
 
 ## Database Migrations
@@ -271,7 +309,7 @@ Use the **Authorize** button in Swagger UI to provide your JWT token and test pr
 
 ## Releases
 
-Current version: **v0.4.1** — MVP with authentication, RBAC and password management. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
+Current version: **v0.4.1** — MVP with authentication, RBAC, password management and pagination. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
 
 ---
 
@@ -279,7 +317,6 @@ Current version: **v0.4.1** — MVP with authentication, RBAC and password manag
 
 | Phase | Description |
 |---|---|
-| Scalability | Pagination, filters, lazy loading (all modules) |
 | v1.0.0 | First real release — MVP complete + scalable |
 
 ---
