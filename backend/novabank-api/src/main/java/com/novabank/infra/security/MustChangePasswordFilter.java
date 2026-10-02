@@ -60,8 +60,12 @@ public class MustChangePasswordFilter extends OncePerRequestFilter {
     private void writeForbiddenResponse(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(
-                "{\"error\":\"Forbidden\",\"message\":\"Password change required before accessing this resource\",\"status\":403}");
+
+        String body = "{\"error\":\"Forbidden\","
+                + "\"message\":\"Password change required before accessing this resource\","
+                + "\"status\":403}";
+
+        response.getWriter().write(body);
     }
 
     private boolean isAllowedPath(String path) {

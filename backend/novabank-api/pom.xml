@@ -216,7 +216,7 @@
                     <format>HTML</format>
                     <outputDirectory>target/dependency-check</outputDirectory>
                     <suppressionFiles>
-                        <suppressionFile>suppression.xml</suppressionFile>
+                        <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
                     </suppressionFiles>
                 </configuration>
                 <executions>
