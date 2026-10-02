@@ -67,6 +67,26 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getAuthenticatedUser() {
 
+        return userMapper.toResponse(getAuthenticatedUserEntity());
+    }
+
+    public ResetPasswordResponse resetPassword(UUID id) {
+
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        User currentAdmin = getAuthenticatedUserEntity();
+
+        if (currentAdmin.getId().equals(target.getId())) {
+            throw new BusinessException("Admin cannot reset their own password");
+        }
+
+        return null;
+    }
+
+
+    private User getAuthenticatedUserEntity() {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
@@ -75,13 +95,7 @@ public class UserService {
 
         String email = authentication.getName();
 
-        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(
+        return userRepository.findByEmailIgnoreCase(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not found with email: " + email));
-
-        return userMapper.toResponse(user);
-    }
-
-    public ResetPasswordResponse resetPassword(UUID id) {
-        return null;
     }
 }
