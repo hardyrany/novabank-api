@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.novabank.features.user.dto.ResetPasswordResponse;
 import com.novabank.features.user.dto.UserRequest;
 import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.mapper.UserMapper;
@@ -45,5 +46,9 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN','SUPPORT')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    public ResponseEntity<ResetPasswordResponse> resetPassword(UUID ID) {
+        return null;
     }
 }
