@@ -1,12 +1,14 @@
 package com.novabank.integration;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -94,5 +96,55 @@ public class ResetPasswordIntegrationTest {
                 .getResponse().getContentAsString();
 
         return JsonPath.read(response, "$.token");
+    }
+
+    @Test
+    void resetPassword_fullFlow_ShouldForceChangeAndRestoreAccess() throws Exception {
+
+        // 1. Target logs in with the initial password → 200
+        String initialToken = "Bearer " + login(targetEmail, targetPassword);
+
+        // 2. Target can call GET /users/{id} (ADMIN role) → 200
+        mockMvc.perform(get("/api/v1/users/" + targetId).header("Authorization", initialToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.email").value(targetEmail));
+
+        // 3. Admin logs in and resets the target's password
+        String adminToken = "Bearer " + login(adminEmail, adminPassword);
+
+        String resetResponse = mockMvc
+                .perform(post("/api/v1/users/" + targetId + "/reset-password")
+                        .header("Authorization", adminToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.temporaryPassword").exists())
+                .andReturn().getResponse().getContentAsString();
+
+        String temporaryPassword = JsonPath.read(resetResponse, "$.temporaryPassword");
+
+        // 4. Target logs in with the temporary password → 200
+        String resetToken = "Bearer " + login(targetEmail, temporaryPassword);
+
+        // 5. Target tries GET /users/{id} → 403 (mustChangePassword = true)
+        mockMvc.perform(get("/api/v1/users/" + targetId).header("Authorization", resetToken))
+                .andExpect(status().isForbidden());
+
+        // 6. Target changes the password via /auth/change-password → 200
+        String newPassword = "NewPass456!";
+        String changeJson = """
+                {
+                    "currentPassword": "%s",
+                    "newPassword": "%s",
+                    "confirmPassword": "%s"
+                }
+                """.formatted(temporaryPassword, newPassword, newPassword);
+
+        mockMvc.perform(post("/api/v1/auth/change-password").header("Authorization", resetToken)
+                .contentType(MediaType.APPLICATION_JSON).content(changeJson))
+                .andExpect(status().isOk());
+
+        // 7. Target logs in with the new password → 200
+        String finalToken = "Bearer " + login(targetEmail, newPassword);
+
+        // 8. Target can call GET /users/{id} again → 200 (flag cleared)
+        mockMvc.perform(get("/api/v1/users/" + targetId).header("Authorization", finalToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.email").value(targetEmail));
     }
 }
