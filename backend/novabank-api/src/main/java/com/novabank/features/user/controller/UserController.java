@@ -49,6 +49,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResetPasswordResponse> resetPassword(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.resetPassword(id));
     }
