@@ -266,4 +266,22 @@ class UserServiceTest {
         verify(userRepository).findById(targetId);
         verify(userRepository, never()).save(any(User.class));
     }
+
+    @Test
+    void resetPassword_ShouldThrowBusinessException_WhenAdminResetsOwnPassword() {
+        // Arrange
+        String email = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> userService.resetPassword(user.getId()));
+
+        verify(userRepository).findById(user.getId());
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userRepository, never()).save(any(User.class));
+    }
 }
