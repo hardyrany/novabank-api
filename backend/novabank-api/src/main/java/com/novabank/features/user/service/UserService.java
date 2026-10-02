@@ -3,6 +3,8 @@ package com.novabank.features.user.service;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,9 +62,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
 
-        return userRepository.findAll().stream().map(userMapper::toResponse).toList();
+        return userRepository.findAll(pageable).map(userMapper::toResponse);
     }
 
     @Transactional(readOnly = true)

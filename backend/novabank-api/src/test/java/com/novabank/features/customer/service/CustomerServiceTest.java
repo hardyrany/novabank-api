@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.repository.CustomerRepository;
@@ -191,55 +195,63 @@ public class CustomerServiceTest {
 
         String customerName = "john";
 
-        List<Customer> customers = List.of(new Customer(), new Customer());
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Customer> page = new PageImpl<>(List.of(new Customer(), new Customer()));
 
         when(customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                customerName, customerName)).thenReturn(customers);
+                customerName, customerName, pageable)).thenReturn(page);
 
-        List<Customer> result = customerService.searchCustomersByName(customerName);
+        Page<Customer> result = customerService.searchCustomersByName(customerName, pageable);
 
-        assertThat(result).hasSize(2);
+        assertThat(result.getContent()).hasSize(2);
     }
 
     @Test
     void searchCustomersByName_WhenNameIsEmpty_ShouldReturnAllCustomers() {
 
-        List<Customer> customers = List.of(new Customer(), new Customer(), new Customer());
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Customer> page =
+                new PageImpl<>(List.of(new Customer(), new Customer(), new Customer()));
 
-        when(customerRepository.findAll()).thenReturn(customers);
+        when(customerRepository.findAll(pageable)).thenReturn(page);
 
-        List<Customer> result = customerService.searchCustomersByName("");
+        Page<Customer> result = customerService.searchCustomersByName("", pageable);
 
-        assertThat(result).hasSize(3);
+        assertThat(result.getContent()).hasSize(3);
         verify(customerRepository, never())
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(any(), any());
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(any(), any(),
+                        any());
     }
 
     @Test
     void searchCustomersByName_WhenNameIsNull_ShouldReturnAllCustomers() {
 
-        List<Customer> customers = List.of(new Customer(), new Customer(), new Customer());
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Customer> page =
+                new PageImpl<>(List.of(new Customer(), new Customer(), new Customer()));
 
-        when(customerRepository.findAll()).thenReturn(customers);
+        when(customerRepository.findAll(pageable)).thenReturn(page);
 
-        List<Customer> result = customerService.searchCustomersByName(null);
+        Page<Customer> result = customerService.searchCustomersByName(null, pageable);
 
-        assertThat(result).hasSize(3);
+        assertThat(result.getContent()).hasSize(3);
         verify(customerRepository, never())
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(any(), any());
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(any(), any(),
+                        any());
     }
 
     @Test
     void getAllCustomers_ShouldReturnAllCustomers() {
 
-        List<Customer> customers = List.of(new Customer());
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Customer> page = new PageImpl<>(List.of(new Customer()));
 
-        when(customerRepository.findAll()).thenReturn(customers);
+        when(customerRepository.findAll(pageable)).thenReturn(page);
 
-        List<Customer> result = customerService.getAllCustomers();
+        Page<Customer> result = customerService.getAllCustomers(pageable);
 
-        assertThat(result).hasSize(1);
-        verify(customerRepository).findAll();
+        assertThat(result.getContent()).hasSize(1);
+        verify(customerRepository).findAll(pageable);
     }
 
     @Test

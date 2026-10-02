@@ -1,6 +1,8 @@
 package com.novabank.features.account.repository;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.novabank.features.account.entity.Account;
@@ -12,7 +14,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     Optional<Account> findByAccountNumber(String accountNumber);
 
-    List<Account> findByCustomerId(Long customerId);
+    Page<Account> findByCustomerId(Long customerId, Pageable pageable);
 
-    List<Account> findByIsActive(boolean isActive);
+    Page<Account> findByIsActive(boolean isActive, Pageable pageable);
 }

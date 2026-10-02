@@ -1,8 +1,8 @@
 package com.novabank.features.customer.repository;
 
-import java.util.List;
 import java.util.Optional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,12 +11,12 @@ import com.novabank.features.customer.entity.Customer;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    List<Customer> findByFirstNameContainingIgnoreCase(String firstName);
+    Page<Customer> findByFirstNameContainingIgnoreCase(String firstName, Pageable pageable);
 
-    List<Customer> findByLastNameContainingIgnoreCase(String lastName);
+    Page<Customer> findByLastNameContainingIgnoreCase(String lastName, Pageable pageable);
 
-    List<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-            String firstName, String lastName);
+    Page<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+            String firstName, String lastName, Pageable pageable);
 
     boolean existsByDocumentNumber(String documentNumber);
 
@@ -27,5 +27,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByEmail(String email);
 
     Optional<Customer> findByEmailIgnoreCase(String email);
-
 }

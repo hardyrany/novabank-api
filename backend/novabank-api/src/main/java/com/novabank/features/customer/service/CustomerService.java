@@ -1,7 +1,7 @@
 package com.novabank.features.customer.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,13 +39,13 @@ public class CustomerService {
                 () -> new ResourceNotFoundException("Customer not found with id: " + id));
     }
 
-    public List<Customer> searchCustomersByName(String name) {
+    public Page<Customer> searchCustomersByName(String name, Pageable pageable) {
         if (name == null || name.trim().isEmpty()) {
-            return customerRepository.findAll();
+            return customerRepository.findAll(pageable);
         }
 
-        return customerRepository
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+        return customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                name, name, pageable);
     }
 
     public Customer getCustomerByEmail(String email) {
@@ -59,8 +59,8 @@ public class CustomerService {
                         "Document number not found: " + documentNumber));
     }
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public Page<Customer> getAllCustomers(Pageable pageable) {
+        return customerRepository.findAll(pageable);
     }
 
     @Transactional

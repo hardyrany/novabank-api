@@ -1,8 +1,9 @@
 package com.novabank.features.customer.controller;
 
-import java.util.List;
-
 import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,7 @@ import com.novabank.features.customer.dto.CustomerResponse;
 import com.novabank.features.customer.entity.Customer;
 import com.novabank.features.customer.mapper.CustomerMapper;
 import com.novabank.features.customer.service.CustomerService;
-
+import com.novabank.infra.dto.PageResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -81,24 +82,24 @@ public class CustomerController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
-    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+    public ResponseEntity<PageResponse<CustomerResponse>> getAllCustomers(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
 
-        List<Customer> customers = customerService.getAllCustomers();
-        List<CustomerResponse> responses =
-                customers.stream().map(customerMapper::toResponse).toList();
+        Page<Customer> customers = customerService.getAllCustomers(pageable);
+        PageResponse<CustomerResponse> response =
+                PageResponse.from(customers.map(customerMapper::toResponse));
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
-    public ResponseEntity<List<CustomerResponse>> searchCustomersByName(@RequestParam String name) {
+    public ResponseEntity<PageResponse<CustomerResponse>> searchCustomersByName(
+            @RequestParam String name, @PageableDefault(size = 20, sort = "id") Pageable pageable) {
 
-        List<Customer> customers = customerService.searchCustomersByName(name);
-        List<CustomerResponse> responses =
-                customers.stream().map(customerMapper::toResponse).toList();
+        Page<Customer> customers = customerService.searchCustomersByName(name, pageable);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(PageResponse.from(customers.map(customerMapper::toResponse)));
     }
 
     @PutMapping("/{id}")

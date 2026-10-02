@@ -4,6 +4,8 @@ import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.novabank.features.transaction.entity.Transaction;
@@ -42,14 +44,14 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Transaction> getHistoryByAccountId(Long accountId) {
+    public Page<Transaction> getHistoryByAccountId(Long accountId, Pageable pageable) {
 
         Account account = accountRepository.findById(accountId).orElseThrow(
                 () -> new ResourceNotFoundException("Account not found with id: " + accountId));
 
         ownershipValidator.validateAccountOwnership(account);
 
-        return transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
+        return transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -58,9 +60,9 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Transaction> getHistoryByAccountIdAndType(Long accountId,
-            TransactionType transactionType) {
+    public Page<Transaction> getHistoryByAccountIdAndType(Long accountId,
+            TransactionType transactionType, Pageable pageable) {
         return transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
-                accountId, transactionType);
+                accountId, transactionType, pageable);
     }
 }

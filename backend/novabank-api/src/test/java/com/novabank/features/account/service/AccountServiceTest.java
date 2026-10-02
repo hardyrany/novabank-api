@@ -13,6 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
@@ -173,33 +177,36 @@ public class AccountServiceTest {
     @Test
     void getAccountsByCustomerId_ShouldThrowResourceNotFoundException_WhenCustomerNotFound() {
         // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
         when(customerService.getCustomerById(99L))
                 .thenThrow(new ResourceNotFoundException("Customer not found with id: 99"));
 
         // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
-                () -> accountService.getAccountsByCustomerId(99L));
+                () -> accountService.getAccountsByCustomerId(99L, pageable));
 
         assertEquals("Customer not found with id: 99", exception.getMessage());
 
         verify(customerService).getCustomerById(99L);
-        verify(accountRepository, never()).findByCustomerId(99L);
+        verify(accountRepository, never()).findByCustomerId(anyLong(), any());
     }
 
     @Test
     void getActiveAccounts_ShouldReturnOnlyActiveAccounts_WhenCalled() {
         // Arrange
-        when(accountRepository.findByIsActive(true)).thenReturn(List.of(account));
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Account> page = new PageImpl<>(List.of(account));
+        when(accountRepository.findByIsActive(true, pageable)).thenReturn(page);
 
         // Act
-        List<Account> result = accountService.getActiveAccounts();
+        Page<Account> result = accountService.getActiveAccounts(pageable);
 
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertTrue(result.get(0).isActive());
+        assertEquals(1, result.getContent().size());
+        assertTrue(result.getContent().get(0).isActive());
 
-        verify(accountRepository).findByIsActive(true);
+        verify(accountRepository).findByIsActive(true, pageable);
     }
 
     @Test

@@ -15,6 +15,8 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,17 +74,17 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
-    public List<Account> getAccountsByCustomerId(Long customerId) {
+    public Page<Account> getAccountsByCustomerId(Long customerId, Pageable pageable) {
         customerService.getCustomerById(customerId);
         ownershipValidator.validateCustomerOwnership(customerId);
 
-        return accountRepository.findByCustomerId(customerId);
+        return accountRepository.findByCustomerId(customerId, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Account> getActiveAccounts() {
+    public Page<Account> getActiveAccounts(Pageable pageable) {
 
-        return accountRepository.findByIsActive(true);
+        return accountRepository.findByIsActive(true, pageable);
     }
 
     public Account updateAccount(Long id, Account accountDetails) {
@@ -124,7 +126,8 @@ public class AccountService {
         customerService.getCustomerById(customerId);
         ownershipValidator.validateCustomerOwnership(customerId);
 
-        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+        List<Account> accounts =
+                accountRepository.findByCustomerId(customerId, Pageable.unpaged()).getContent();
 
         CustomerAccountSummary accountSummary = new CustomerAccountSummary();
         accountSummary.setCustomerId(customerId);

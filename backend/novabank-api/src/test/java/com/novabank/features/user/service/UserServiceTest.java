@@ -15,6 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -162,16 +166,18 @@ class UserServiceTest {
     @Test
     void getAllUsers_ShouldReturnEmptyList_WhenNoUsersExist() {
         // Arrange
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> emptyPage = new PageImpl<>(Collections.emptyList());
+        when(userRepository.findAll(pageable)).thenReturn(emptyPage);
 
         // Act
-        List<UserResponse> result = userService.getAllUsers();
+        Page<UserResponse> result = userService.getAllUsers(pageable);
 
         // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAll(pageable);
         verify(userMapper, never()).toResponse(any(User.class));
     }
 
@@ -187,20 +193,22 @@ class UserServiceTest {
         UserResponse secondResponse = new UserResponse(secondUser.getId(), "support@novabank.com",
                 true, Set.of(Role.SUPPORT));
 
-        when(userRepository.findAll()).thenReturn(List.of(user, secondUser));
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> usersPage = new PageImpl<>(List.of(user, secondUser));
+        when(userRepository.findAll(pageable)).thenReturn(usersPage);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
         when(userMapper.toResponse(secondUser)).thenReturn(secondResponse);
 
         // Act
-        List<UserResponse> result = userService.getAllUsers();
+        Page<UserResponse> result = userService.getAllUsers(pageable);
 
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(userResponse.getEmail(), result.get(0).getEmail());
-        assertEquals(secondResponse.getEmail(), result.get(1).getEmail());
+        assertEquals(2, result.getContent().size());
+        assertEquals(userResponse.getEmail(), result.getContent().get(0).getEmail());
+        assertEquals(secondResponse.getEmail(), result.getContent().get(1).getEmail());
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAll(pageable);
         verify(userMapper).toResponse(user);
         verify(userMapper).toResponse(secondUser);
     }
