@@ -18,7 +18,7 @@ public class PageResponse<T> {
     public PageResponse(List<T> content, int page, int size, long totalElements, int totalPages,
             boolean first, boolean last) {
 
-        this.content = content;
+        this.content = content != null ? List.copyOf(content) : List.of();
         this.page = page;
         this.size = size;
         this.totalElements = totalElements;
@@ -28,11 +28,11 @@ public class PageResponse<T> {
     }
 
     public List<T> getContent() {
-        return content;
+        return content != null ? List.copyOf(content) : List.of();
     }
 
     public void setContent(List<T> content) {
-        this.content = content;
+        this.content = content != null ? List.copyOf(content) : List.of();
     }
 
     public int getPage() {
