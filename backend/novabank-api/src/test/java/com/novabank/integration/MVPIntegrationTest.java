@@ -197,14 +197,14 @@ public class MVPIntegrationTest {
 
         mockMvc.perform(get("/api/v1/accounts/%d/transactions".formatted(accountId))
                 .header("Authorization", bearerToken)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_OUT"))
-                .andExpect(jsonPath("$[1].transactionType").value("DEPOSIT"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].transactionType").value("TRANSFER_OUT"))
+                .andExpect(jsonPath("$.content[1].transactionType").value("DEPOSIT"));
 
         mockMvc.perform(get("/api/v1/accounts/%d/transactions".formatted(account2Id))
                 .header("Authorization", bearerToken)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].transactionType").value("TRANSFER_IN"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].transactionType").value("TRANSFER_IN"));
     }
 
     private Long extractId(String json) {
