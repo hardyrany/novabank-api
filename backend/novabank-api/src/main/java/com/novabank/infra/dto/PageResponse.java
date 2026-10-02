@@ -1,6 +1,7 @@
 package com.novabank.infra.dto;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public class PageResponse<T> {
 
@@ -80,5 +81,10 @@ public class PageResponse<T> {
 
     public void setLast(boolean last) {
         this.last = last;
+    }
+
+    public static <T> PageResponse<T> from(Page<T> page) {
+        return new PageResponse<>(page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 }
