@@ -4,10 +4,11 @@
 
 ## Project Status
 
-**Current Version:** `v0.4.0` — Functionally complete MVP with authentication, RBAC and ownership validation (Phase 8.1, without scalability).
+**Current Version:** `v0.4.1` — MVP with authentication, RBAC, ownership validation and password management (Phase 8.1.1, without scalability).
 
 - **Core banking:** customer create, account create/view, transaction ledger, deposit, withdraw, transaction history, transfer between accounts
-- **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me), roles ADMIN / SUPPORT / USER, reusable ownership validation (including transfer source)
+- **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me via `/auth/me`), roles ADMIN / SUPPORT / USER, reusable ownership validation (including transfer source)
+- **Password management:** change own password (`/auth/change-password`), force change on first login / admin reset (`mustChangePassword`), admin reset of another user's password (`/users/{id}/reset-password`)
 
 ---
 
@@ -40,17 +41,17 @@ novabank/
 │   └── src/main/java/com/novabank/
 │       ├── features/          # One package per feature
 │       │   ├── account/       # e.g. controller, dto, entity, mapper, repository, service
-│       │   ├── auth/          # login, registration, admin bootstrap runner
+│       │   ├── auth/          # login, register, change-password, me, admin bootstrap runner
 │       │   ├── customer/
 │       │   ├── health/
 │       │   ├── transaction/
 │       │   ├── transfer/
-│       │   └── user/
+│       │   └── user/          # user management + reset-password
 │       └── infra/             # Cross-cutting concerns
 │           ├── config/        # OpenAPI and web configuration
 │           ├── exception/     # Business exceptions and global handler
-│           └── security/      # JWT filter, security config, OwnershipValidator
-├── database/migration/        # Flyway migrations (V1–V7)
+│           └── security/      # JWT filter, MustChangePassword filter, security config, OwnershipValidator
+├── database/migration/        # Flyway migrations (V1–V8)
 ├── docs/
 ├── project-evolution/
 ├── .env.example
@@ -103,7 +104,7 @@ PostgreSQL is exposed on host port **5433** (container port 5432) to avoid confl
 
 ---
 
-## Available Endpoints (v0.4.0)
+## Available Endpoints (v0.4.1)
 
 The full, interactive reference is available in Swagger UI (see [API Documentation](#api-documentation)).
 
@@ -113,6 +114,8 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 |---|---|---|
 | POST | `/api/v1/auth/login` | Public |
 | POST | `/api/v1/auth/register` (creates role USER) | Public |
+| POST | `/api/v1/auth/change-password` (changes own password) | Any authenticated |
+| GET | `/api/v1/auth/me` (current user) | Any authenticated |
 
 ### User
 
@@ -121,7 +124,9 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | POST | `/api/v1/users` | ADMIN |
 | GET | `/api/v1/users` | ADMIN, SUPPORT |
 | GET | `/api/v1/users/{id}` | ADMIN, SUPPORT |
-| GET | `/api/v1/users/me` | Any authenticated |
+| POST | `/api/v1/users/{id}/reset-password` (generates a temporary password, forces change on next request) | ADMIN |
+
+**Note:** `/users/me` was moved to `/auth/me` in the `auth-me` slice.
 
 ### Customer
 
@@ -199,34 +204,49 @@ The API enforces role-based access control with three roles:
 
 | Role | Capabilities |
 |---|---|
-| ADMIN | Manage users (create with any role), view users, manage customers and accounts |
+| ADMIN | Manage users (create with any role), view users, manage customers and accounts, reset other users' passwords |
 | SUPPORT | View users, manage customers and accounts, execute deposits/withdrawals/transfers on any account |
 | USER | View and operate only their own accounts |
 
 **Ownership validation:** a USER can only access their own accounts. ADMIN and SUPPORT have unrestricted access.
 
-**Bootstrap:** the first ADMIN is created on application startup via `AdminBootstrapRunner`, reading `ADMIN_EMAIL` and `ADMIN_PASSWORD` from environment variables (12-Factor App).
+**Bootstrap:** the first ADMIN is created on application startup via `AdminBootstrapRunner`, reading `ADMIN_EMAIL` and `ADMIN_PASSWORD` from environment variables (12-Factor App). The bootstrap admin is created with `mustChangePassword = true` — the first login forces a password change before any other endpoint can be used.
+
+### Password management
+
+The API enforces a "must change password" rule on top of authentication:
+
+1. When a user has `mustChangePassword = true`, every request to a non-allow-listed endpoint returns **403 Forbidden** with `{"error":"Forbidden","message":"Password change required before accessing this resource","status":403}`.
+2. Allow-listed endpoints (accessible while the flag is active): `/auth/login`, `/auth/register`, `/auth/me`, `/auth/change-password`.
+3. `POST /auth/change-password` clears the flag on success.
+4. Admins can reset another user's password via `POST /users/{id}/reset-password` — the system generates a 12-char temporary password and returns it once in the response. The target user is flagged `mustChangePassword = true`.
+
+**Two-layer enforcement:**
+- `MustChangePasswordFilter` (servlet filter, runs after `JwtAuthenticationFilter`) — blocks non-allow-listed endpoints when the flag is active.
+- `AuthService.changePassword` — validates the current password and clears the flag on success.
 
 ---
 
 ## Database Migrations
 
-Managed by Flyway. Migration scripts (V1–V7) live in `database/migration/`, covering customers, accounts (optimistic locking, balance check), transactions and users (case-insensitive email).
+Managed by Flyway. Migration scripts (V1–V8) live in `database/migration/`, covering customers, accounts (optimistic locking, balance check), transactions, users (case-insensitive email) and the `must_change_password` flag on users.
 
 ---
 
 ## Tests
 
-The project has ~98 tests (unit tests for services, filter and bootstrap runner, plus integration tests).
+The project has ~117 tests (unit tests for services, filters and bootstrap runner, plus integration tests).
 
-Two end-to-end integration tests validate the complete flows:
+Three end-to-end integration tests validate the complete flows:
 
 - **`MVPIntegrationTest`** — full MVP flow with JWT: create user, login, create customer, create account, deposit, transfer, view transaction history
 - **`RbacIntegrationTest`** — RBAC matrix (401/403/200/201) for all three roles: user management, customer management, account access, ownership on deposits and transfers
+- **`ResetPasswordIntegrationTest`** — admin resets a user's password, the user logs in with the temporary one, is blocked (403) until changing it, then regains access
 
 ```bash
 ./mvnw test -Dtest=MVPIntegrationTest
 ./mvnw test -Dtest=RbacIntegrationTest
+./mvnw test -Dtest=ResetPasswordIntegrationTest
 ```
 
 ### Full Verification (with Dependency Check)
@@ -251,7 +271,7 @@ Use the **Authorize** button in Swagger UI to provide your JWT token and test pr
 
 ## Releases
 
-Current version: **v0.4.0** — MVP with authentication + RBAC. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
+Current version: **v0.4.1** — MVP with authentication, RBAC and password management. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
 
 ---
 
@@ -259,9 +279,7 @@ Current version: **v0.4.0** — MVP with authentication + RBAC. See [CHANGELOG.m
 
 | Phase | Description |
 |---|---|
-| 8.1.1 | Password management (change, reset, must-change-password) |
 | Scalability | Pagination, filters, lazy loading (all modules) |
-| Phase 9+ | Backlog (limit, loan, notification, report) |
 | v1.0.0 | First real release — MVP complete + scalable |
 
 ---
