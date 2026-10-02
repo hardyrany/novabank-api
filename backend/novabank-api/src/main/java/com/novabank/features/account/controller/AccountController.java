@@ -193,8 +193,7 @@ public class AccountController {
     @GetMapping("/{id}/transactions")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
     public ResponseEntity<PageResponse<TransactionResponse>> getTransactionResponse(
-            @PathVariable Long id,
-            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable) {
+            @PathVariable Long id, @PageableDefault(size = 20) Pageable pageable) {
 
         Page<Transaction> transactions = transactionService.getHistoryByAccountId(id, pageable);
 
