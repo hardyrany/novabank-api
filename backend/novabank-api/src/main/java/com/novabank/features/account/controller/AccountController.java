@@ -3,6 +3,9 @@ package com.novabank.features.account.controller;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +30,7 @@ import com.novabank.features.transaction.dto.TransactionResponse;
 import com.novabank.features.transaction.entity.Transaction;
 import com.novabank.features.transaction.mapper.TransactionMapper;
 import com.novabank.features.transaction.service.TransactionService;
+import com.novabank.infra.dto.PageResponse;
 import com.novabank.infra.security.OwnershipValidator;
 
 @RestController
@@ -87,27 +91,23 @@ public class AccountController {
 
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
-    public ResponseEntity<List<AccountResponse>> getAccountsByCustomerId(
-            @PathVariable Long customerId) {
+    public ResponseEntity<PageResponse<AccountResponse>> getAccountsByCustomerId(
+            @PathVariable Long customerId,
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
 
-        List<Account> accounts = accountService.getAccountsByCustomerId(customerId);
+        Page<Account> accounts = accountService.getAccountsByCustomerId(customerId, pageable);
 
-        List<AccountResponse> accountResponses =
-                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
-
-        return ResponseEntity.ok(accountResponses);
+        return ResponseEntity.ok(PageResponse.from(accounts.map(accountMapper::toResponse)));
     }
 
     @GetMapping("/active")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
-    public ResponseEntity<List<AccountResponse>> getActiveAccounts() {
+    public ResponseEntity<PageResponse<AccountResponse>> getActiveAccounts(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
 
-        List<Account> accounts = accountService.getActiveAccounts();
+        Page<Account> accounts = accountService.getActiveAccounts(pageable);
 
-        List<AccountResponse> accountResponses =
-                accounts.stream().map(accountMapper::toResponse).collect(Collectors.toList());
-
-        return ResponseEntity.ok(accountResponses);
+        return ResponseEntity.ok(PageResponse.from(accounts.map(accountMapper::toResponse)));
     }
 
     @GetMapping("/{id}/balance")
@@ -192,12 +192,13 @@ public class AccountController {
 
     @GetMapping("/{id}/transactions")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT', 'USER')")
-    public ResponseEntity<List<TransactionResponse>> getTransactionResponse(@PathVariable Long id) {
+    public ResponseEntity<PageResponse<TransactionResponse>> getTransactionResponse(
+            @PathVariable Long id,
+            @PageableDefault(size = 20, sort = "createdAt,desc") Pageable pageable) {
 
-        List<Transaction> transactions = transactionService.getHistoryByAccountId(id);
-        List<TransactionResponse> transactionResponses =
-                transactionMapper.toResponseList(transactions);
+        Page<Transaction> transactions = transactionService.getHistoryByAccountId(id, pageable);
 
-        return ResponseEntity.ok(transactionResponses);
+        return ResponseEntity
+                .ok(PageResponse.from(transactions.map(transactionMapper::toResponse)));
     }
 }
