@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.novabank.features.user.dto.ResetPasswordResponse;
 import com.novabank.features.user.dto.UserRequest;
 import com.novabank.features.user.dto.UserResponse;
 import com.novabank.features.user.entity.User;
@@ -78,5 +79,9 @@ public class UserService {
                 () -> new ResourceNotFoundException("User not found with email: " + email));
 
         return userMapper.toResponse(user);
+    }
+
+    public ResetPasswordResponse resetPassword(UUID id) {
+        return null;
     }
 }
