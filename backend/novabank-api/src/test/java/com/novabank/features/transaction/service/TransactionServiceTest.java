@@ -14,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import com.novabank.features.account.entity.Account;
 import com.novabank.features.account.repository.AccountRepository;
 import com.novabank.features.transaction.entity.Transaction;
@@ -124,19 +128,22 @@ public class TransactionServiceTest {
             deposits.add(t);
         }
 
-        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
-                accountId, TransactionType.DEPOSIT)).thenReturn(deposits);
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Transaction> page = new PageImpl<>(deposits);
 
-        List<Transaction> result =
-                transactionService.getHistoryByAccountIdAndType(accountId, TransactionType.DEPOSIT);
+        when(transactionRepository.findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
+                accountId, TransactionType.DEPOSIT, pageable)).thenReturn(page);
+
+        Page<Transaction> result = transactionService.getHistoryByAccountIdAndType(accountId,
+                TransactionType.DEPOSIT, pageable);
 
         assertNotNull(result);
-        assertEquals(3, result.size());
-        assertTrue(
-                result.stream().allMatch(t -> t.getTransactionType() == TransactionType.DEPOSIT));
+        assertEquals(3, result.getContent().size());
+        assertTrue(result.getContent().stream()
+                .allMatch(t -> t.getTransactionType() == TransactionType.DEPOSIT));
 
         verify(transactionRepository).findByAccountIdAndTransactionTypeOrderByCreatedAtDescIdDesc(
-                accountId, TransactionType.DEPOSIT);
+                accountId, TransactionType.DEPOSIT, pageable);
     }
 
     @Test
@@ -154,34 +161,41 @@ public class TransactionServiceTest {
             transactions.add(t);
         }
 
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
-        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
-                .thenReturn(transactions);
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Transaction> page = new PageImpl<>(transactions);
 
-        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId, pageable))
+                .thenReturn(page);
+
+        Page<Transaction> result = transactionService.getHistoryByAccountId(accountId, pageable);
 
         assertNotNull(result);
-        assertEquals(3, result.size());
-        assertEquals("Transaction 1", result.get(0).getDescription());
+        assertEquals(3, result.getContent().size());
+        assertEquals("Transaction 1", result.getContent().get(0).getDescription());
 
         verify(ownershipValidator).validateAccountOwnership(account);
-        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId,
+                pageable);
     }
 
     @Test
     void getHistoryByAccountId_ShouldReturnEmptyList_WhenAccountHasNoTransactions() {
         List<Transaction> emptyList = new ArrayList<>();
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<Transaction> page = new PageImpl<>(emptyList);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
-        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId))
-                .thenReturn(emptyList);
+        when(transactionRepository.findByAccountIdOrderByCreatedAtDescIdDesc(accountId, pageable))
+                .thenReturn(page);
 
-        List<Transaction> result = transactionService.getHistoryByAccountId(accountId);
+        Page<Transaction> result = transactionService.getHistoryByAccountId(accountId, pageable);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty());
 
         verify(ownershipValidator).validateAccountOwnership(account);
-        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId);
+        verify(transactionRepository).findByAccountIdOrderByCreatedAtDescIdDesc(accountId,
+                pageable);
     }
 }
