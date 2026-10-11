@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Ignore internal representation exposure for Spring Beans -->
+    <Match>
+        <Class name="~.*(Controller|Service|Mapper)$" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" />
+        <Or>
+            <Class name="com.novabank.infra.security.JwtAuthenticationEntryPoint" />
+            <Class name="com.novabank.infra.security.SecurityConfig" />
+        </Or>
+    </Match>
+</FindBugsFilter>

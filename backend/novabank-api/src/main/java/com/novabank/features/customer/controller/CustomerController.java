@@ -1,0 +1,141 @@
+package com.novabank.features.customer.controller;
+
+import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.novabank.features.customer.dto.CustomerRequest;
+import com.novabank.features.customer.dto.CustomerResponse;
+import com.novabank.features.customer.entity.Customer;
+import com.novabank.features.customer.mapper.CustomerMapper;
+import com.novabank.features.customer.service.CustomerService;
+import com.novabank.infra.dto.PageResponse;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("api/v1/customers")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2",
+        justification = "Spring beans are singletons, not mutable")
+public class CustomerController {
+
+    private final CustomerService customerService;
+    private final CustomerMapper customerMapper;
+
+    public CustomerController(CustomerService customerService, CustomerMapper customerMapper) {
+        this.customerService = customerService;
+        this.customerMapper = customerMapper;
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<CustomerResponse> createCustomer(
+            @Valid @RequestBody CustomerRequest request) {
+
+        Customer customer = new CustomerMapper().toEntity(request);
+
+        Customer savedCustomer = customerService.createCustomer(customer);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(customerMapper.toResponse(savedCustomer));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
+
+        Customer customer = customerService.getCustomerById(id);
+
+        return ResponseEntity.ok(customerMapper.toResponse(customer));
+    }
+
+    @GetMapping("/email/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<CustomerResponse> getCustomerByEmail(@PathVariable String email) {
+
+        Customer customer = customerService.getCustomerByEmail(email);
+
+        return ResponseEntity.ok(customerMapper.toResponse(customer));
+    }
+
+    @GetMapping("/document/{documentNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<CustomerResponse> getCustomerByDocumentNumber(
+            @PathVariable String documentNumber) {
+
+        Customer customer = customerService.getCustomerByDocumentNumber(documentNumber);
+
+        return ResponseEntity.ok(customerMapper.toResponse(customer));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<PageResponse<CustomerResponse>> getAllCustomers(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+
+        Page<Customer> customers = customerService.getAllCustomers(pageable);
+        PageResponse<CustomerResponse> response =
+                PageResponse.from(customers.map(customerMapper::toResponse));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<PageResponse<CustomerResponse>> searchCustomersByName(
+            @RequestParam String name, @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+
+        Page<Customer> customers = customerService.searchCustomersByName(name, pageable);
+
+        return ResponseEntity.ok(PageResponse.from(customers.map(customerMapper::toResponse)));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
+            @Valid @RequestBody CustomerRequest request) {
+
+        Customer customer = new Customer();
+
+        customer.setFirstName(request.getFirstName());
+        customer.setMiddleName(request.getMiddleName());
+        customer.setLastName(request.getLastName());
+        customer.setPhone(request.getPhone());
+        customer.setBirthDate(request.getBirthDate());
+        customer.setAddress(request.getAddress());
+
+        Customer updatedCustomer = customerService.updateCustomer(id, customer);
+
+        return ResponseEntity.ok(customerMapper.toResponse(updatedCustomer));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<Void> deactivateCustomer(@PathVariable Long id) {
+
+        customerService.deleteCustomer(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT')")
+    public ResponseEntity<Void> activateCustomer(@PathVariable Long id) {
+
+        customerService.activateCustomer(id);
+
+        return ResponseEntity.noContent().build();
+    }
+}

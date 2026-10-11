@@ -1,0 +1,334 @@
+package com.novabank.features.user.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.novabank.features.user.dto.ResetPasswordResponse;
+import com.novabank.features.user.dto.UserRequest;
+import com.novabank.features.user.dto.UserResponse;
+import com.novabank.features.user.entity.User;
+import com.novabank.features.user.enums.Role;
+import com.novabank.features.user.mapper.UserMapper;
+import com.novabank.features.user.repository.UserRepository;
+import com.novabank.infra.exception.BusinessException;
+import com.novabank.infra.exception.ResourceNotFoundException;
+import com.novabank.infra.exception.UnauthorizedException;
+
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserService userService;
+
+    private UserRequest userRequest;
+    private User user;
+    private UserResponse userResponse;
+    private String encodedPassword;
+
+    @BeforeEach
+    void setUp() {
+        userRequest = new UserRequest("admin@novabank.com", "admin123", Set.of(Role.ADMIN));
+
+        user = new User();
+        user.setId(UUID.randomUUID());
+        user.setEmail("admin@novabank.com");
+        user.setPassword("admin123");
+        user.setIsActive(true);
+        user.setRoles(Set.of(Role.ADMIN));
+
+        encodedPassword = "$2b$12$encodedPasswordHash";
+        userResponse =
+                new UserResponse(user.getId(), "admin@novabank.com", true, Set.of(Role.ADMIN));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void createUser_ShouldReturnUserResponse_WhenSuccessful() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(false);
+        when(userMapper.toEntity(userRequest)).thenReturn(user);
+        when(passwordEncoder.encode(userRequest.getPassword())).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.createUser(userRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getEmail(), result.getEmail());
+        assertEquals(userResponse.getRoles(), result.getRoles());
+        assertTrue(result.getIsActive());
+
+        verify(userRepository).existsByEmail(userRequest.getEmail());
+        verify(userMapper).toEntity(userRequest);
+        verify(passwordEncoder).encode(userRequest.getPassword());
+        verify(userRepository).save(any(User.class));
+        verify(userMapper).toResponse(any(User.class));
+    }
+
+    @Test
+    void createUser_ShouldThrowBusinessException_WhenEmailAlreadyExists() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> userService.createUser(userRequest));
+
+        verify(userRepository).existsByEmail(userRequest.getEmail());
+        verify(userMapper, never()).toEntity(any(UserRequest.class));
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(userRepository, never()).save(any(User.class));
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void createUser_ShouldEncryptPassword_WhenSuccessful() {
+        // Arrange
+        when(userRepository.existsByEmail(userRequest.getEmail())).thenReturn(false);
+        when(userMapper.toEntity(userRequest)).thenReturn(user);
+        when(passwordEncoder.encode(userRequest.getPassword())).thenReturn(encodedPassword);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userMapper.toResponse(any(User.class))).thenReturn(userResponse);
+
+        // Act
+        userService.createUser(userRequest);
+
+        // Assert
+        verify(passwordEncoder).encode("admin123");
+        assertEquals(encodedPassword, user.getPassword());
+    }
+
+    @Test
+    void getUserById_ShouldReturnUserResponse_WhenUserExists() {
+        // Arrange
+        UUID id = user.getId();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.getUserById(id);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getId(), result.getId());
+        assertEquals(userResponse.getEmail(), result.getEmail());
+
+        verify(userRepository).findById(id);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    void getUserById_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(id));
+
+        verify(userRepository).findById(id);
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void getAllUsers_ShouldReturnEmptyList_WhenNoUsersExist() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> emptyPage = new PageImpl<>(Collections.emptyList());
+        when(userRepository.findAll(pageable)).thenReturn(emptyPage);
+
+        // Act
+        Page<UserResponse> result = userService.getAllUsers(pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+
+        verify(userRepository).findAll(pageable);
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void getAllUsers_ShouldReturnMappedList_WhenUsersExist() {
+        // Arrange
+        User secondUser = new User();
+        secondUser.setId(UUID.randomUUID());
+        secondUser.setEmail("support@novabank.com");
+        secondUser.setIsActive(true);
+        secondUser.setRoles(Set.of(Role.SUPPORT));
+
+        UserResponse secondResponse = new UserResponse(secondUser.getId(), "support@novabank.com",
+                true, Set.of(Role.SUPPORT));
+
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> usersPage = new PageImpl<>(List.of(user, secondUser));
+        when(userRepository.findAll(pageable)).thenReturn(usersPage);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+        when(userMapper.toResponse(secondUser)).thenReturn(secondResponse);
+
+        // Act
+        Page<UserResponse> result = userService.getAllUsers(pageable);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(userResponse.getEmail(), result.getContent().get(0).getEmail());
+        assertEquals(secondResponse.getEmail(), result.getContent().get(1).getEmail());
+
+        verify(userRepository).findAll(pageable);
+        verify(userMapper).toResponse(user);
+        verify(userMapper).toResponse(secondUser);
+    }
+
+    @Test
+    void getAuthenticatedUser_ShouldReturnUserResponse_WhenAuthenticated() {
+        // Arrange
+        String email = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        // Act
+        UserResponse result = userService.getAuthenticatedUser();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(userResponse.getEmail(), result.getEmail());
+        assertEquals(userResponse.getRoles(), result.getRoles());
+
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userMapper).toResponse(user);
+    }
+
+    @Test
+    void getAuthenticatedUser_ShouldThrowUnauthorizedException_WhenNotAuthenticated() {
+        // Arrange — SecurityContextHolder vazio (sem autenticação)
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> userService.getAuthenticatedUser());
+
+        verify(userRepository, never()).findByEmailIgnoreCase(anyString());
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void getAuthenticatedUser_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+        // Arrange
+        String email = "ghost@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.getAuthenticatedUser());
+
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userMapper, never()).toResponse(any(User.class));
+    }
+
+    @Test
+    void resetPassword_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        // Arrange
+        UUID targetId = UUID.randomUUID();
+        when(userRepository.findById(targetId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> userService.resetPassword(targetId));
+
+        verify(userRepository).findById(targetId);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void resetPassword_ShouldThrowBusinessException_WhenAdminResetsOwnPassword() {
+        // Arrange
+        String email = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(email, null));
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(email)).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        assertThrows(BusinessException.class, () -> userService.resetPassword(user.getId()));
+
+        verify(userRepository).findById(user.getId());
+        verify(userRepository).findByEmailIgnoreCase(email);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void resetPassword_ShouldReturnTemporaryPassword_WhenSuccessful() {
+        // Arrange
+        String adminEmail = "admin@novabank.com";
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(adminEmail, null));
+
+        User admin = new User();
+        admin.setId(UUID.randomUUID());
+        admin.setEmail(adminEmail);
+
+        User target = new User();
+        target.setId(UUID.randomUUID());
+        target.setEmail("target@novabank.com");
+        target.setPassword("oldPassword");
+        target.setMustChangePassword(false);
+
+        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        when(userRepository.findByEmailIgnoreCase(adminEmail)).thenReturn(Optional.of(admin));
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedTempPassword");
+
+        // Act
+        ResetPasswordResponse result = userService.resetPassword(target.getId());
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getTemporaryPassword());
+        assertFalse(result.getTemporaryPassword().isBlank());
+        assertEquals(12, result.getTemporaryPassword().length());
+
+        assertEquals("encodedTempPassword", target.getPassword());
+        assertTrue(target.getMustChangePassword());
+
+        verify(userRepository).findById(target.getId());
+        verify(userRepository).findByEmailIgnoreCase(adminEmail);
+        verify(passwordEncoder).encode(anyString());
+        verify(userRepository).save(target);
+    }
+}

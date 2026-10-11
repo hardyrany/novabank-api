@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <suppress>
+        <notes><![CDATA[
+            False positive: CVE-2022-31691 is a Remote Code Execution vulnerability in
+            Spring Tool Suite 4 (STS4) YAML editors for Eclipse/VSCode extensions,
+            not in the spring-boot-devtools runtime library itself.
+            Reference: https://spring.io/security/cve-2022-31691/
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring\-boot\-devtools@.*$</packageUrl>
+        <cve>CVE-2022-31691</cve>
+    </suppress>
+
+</suppressions>

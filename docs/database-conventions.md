@@ -7,13 +7,19 @@
 - **Separator:** `__` (double underscore)
 - **Description:** English, snake_case, descriptive
 - **Extension:** `.sql`
-- **Location:** `database/migrations/`
+- **Location:** `database/migration/`
 
 ## Migration Rules
 - **Never edit an applied migration** — create a new one to fix it
 - Migrations are applied in order of version number
 - Each migration should be idempotent when possible
 - Use `IF NOT EXISTS` for CREATE operations
+
+## Database Schema
+- **Default Schema:** `public`
+- **Custom Schema:** `customers` (for customer-related tables)
+- Each domain can have its own schema for better organization and isolation
+- Schemas are created via Flyway migrations using `CREATE SCHEMA IF NOT EXISTS`
 
 ## Table Naming
 - **Plural:** `customers`, `accounts`, `transactions`
