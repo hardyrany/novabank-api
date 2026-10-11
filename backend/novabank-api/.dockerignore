@@ -1,0 +1,46 @@
+# ===== Build artifacts =====
+target/
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Git =====
+.git/
+.gitignore
+.gitattributes
+
+# ===== Environment =====
+.env
+.env.*
+!.env.example
+
+# ===== Docker =====
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# ===== Docs / misc =====
+*.md
+!README.md
+HELP.md
+LICENSE
+docs/
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Test artifacts =====
+.surefire/
