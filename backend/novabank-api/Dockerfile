@@ -11,9 +11,9 @@ COPY pom.xml .
 # Download dependencies (cached unless pom.xml changes)
 RUN ./mvnw dependency:go-offline -B
 
-# Copy source and build
+# Copy source and build (skip quality/security plugins - CI runs them)
 COPY src src
-RUN ./mvnw clean package -DskipTests -B
+RUN ./mvnw clean package -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Ddependency-check.skip=true -B
 
 # ===== STAGE 2: Runtime =====
 FROM eclipse-temurin:21-jre-alpine
