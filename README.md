@@ -110,12 +110,17 @@ PostgreSQL is exposed on host port **5433** to avoid conflicts with local instal
 
 ### Local (Docker)
 
+Build the image and run it on the same Docker network as the Postgres container (started by `docker-compose up -d`):
+
 ```bash
 cd backend/novabank-api
 docker build -t novabank-api:local .
 
 docker run --rm -p 8080:8080 \
-  -e DB_HOST=host.docker.internal \
+  --network novabank_novabank-network \
+  -e SPRING_PROFILES_ACTIVE=staging \
+  -e DB_HOST=novabank-postgres \
+  -e DB_PORT=5432 \
   -e DB_NAME=novabank_dev \
   -e DB_USERNAME=admin \
   -e DB_PASSWORD=admin123 \
@@ -124,6 +129,10 @@ docker run --rm -p 8080:8080 \
   -e ADMIN_PASSWORD=ChangeMe123! \
   novabank-api:local
 ```
+
+The API starts on `http://localhost:8080`. Flyway runs the migrations from inside the JAR.
+
+**Note:** the container joins the Docker network created by `docker-compose`. `DB_HOST` is the Postgres **container name** (`novabank-postgres`), not `host.docker.internal`; `DB_PORT` is the internal port (`5432`), not the host mapping (`5433`).
 
 ### Production (Render + Neon)
 
