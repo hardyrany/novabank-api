@@ -2,7 +2,7 @@
 
 All notable changes to NovaBank are documented in this file.
 
-## [v1.0.0] — Unreleased
+## [v1.0.0]
 
 First real release — MVP complete + scalable.
 
@@ -15,7 +15,7 @@ First real release — MVP complete + scalable.
 | Pagination | — | `?page=&size=&sort=` on all list endpoints (default `size=20`) |
 | Migrations | V1–V8 | V1–V8 (unchanged) |
 | Tests | ~117 | ~117 (updated for pagination) |
-| Tags | v0.1.0 … v0.4.1 | + v1.0.0 (pending) |
+| Tags | v0.1.0 … v0.4.1 | + v1.0.0 |
 | Next Steps | Scalability | Production prep → release |
 
 ### Added
@@ -102,7 +102,6 @@ MVP with authentication + RBAC (role-based access control).
 - RBAC on customer-facing account endpoints (any authenticated role)
 - Ownership validation on account access, deposit, withdraw, transactions
 - `OwnershipValidator` — reusable component for account/customer ownership checks
-- `AccountNotOwnedByCustomerException` — removed (ForbiddenException with message)
 - `AccessDeniedException` handler → returns 403 with consistent `ErrorResponse`
 - `MethodArgumentNotValidException` handler → returns 400 with consistent `ErrorResponse`
 - `RbacIntegrationTest` — 14 integration tests covering the 401/403/200/201 matrix
@@ -232,6 +231,3 @@ Partial MVP — customer-create, account-create, account-view, transaction-ledge
 ### Added
 - `POST /customers`, `POST /accounts`, `GET /accounts/{id}`
 - `Transaction` entity + `recordEntry` (ledger only, no endpoint)
-</｜｜DSML｜｜ parameter>
-</｜｜DSML｜｜ invoke>
-</｜｜DSML｜｜ calls>

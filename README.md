@@ -4,12 +4,13 @@
 
 ## Project Status
 
-**Current Version:** `v0.4.1` — MVP with authentication, RBAC, ownership validation, password management and pagination.
+**Current Version:** `v1.0.0` — First public release. MVP with authentication, RBAC, ownership validation, password management, pagination and production deployment.
 
 - **Core banking:** customer create, account create/view, transaction ledger, deposit, withdraw, transaction history, transfer between accounts
-- **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me via `/auth/me`), roles ADMIN / SUPPORT / USER, reusable ownership validation (including transfer source)
+- **Auth & RBAC:** user create, public registration, login (JWT), protected endpoints, user queries (list, by id, me via `/auth/me`), roles ADMIN / SUPPORT / USER, reusable ownership validation
 - **Password management:** change own password (`/auth/change-password`), force change on first login / admin reset (`mustChangePassword`), admin reset of another user's password (`/users/{id}/reset-password`)
 - **Pagination:** all list endpoints accept `?page=&size=&sort=` and return `PageResponse<T>`
+- **Deployment:** Docker image, Render (free tier), Neon managed Postgres, UptimeRobot keep-alive
 
 ---
 
@@ -30,7 +31,7 @@
 |---|---|---|
 | Checkstyle | 3.6.0 | Style/convention checks, runs on `validate` phase |
 | SpotBugs | 4.10.4.0 | Static analysis for bug patterns, runs on `verify` phase |
-| OWASP Dependency-Check | 13.0.0 | CVE scanning against the NVD database, runs on `verify` phase (fails the build on CVSS ≥ 7) |
+| OWASP Dependency-Check | 13.0.0 | CVE scanning against the NVD database, runs on `verify` phase |
 
 ---
 
@@ -38,24 +39,32 @@
 
 ```text
 novabank/
-├── backend/novabank-api/      # Spring Boot application (pom.xml, src/main, src/test)
-│   └── src/main/java/com/novabank/
-│       ├── features/          # One package per feature
-│       │   ├── account/       # e.g. controller, dto, entity, mapper, repository, service
-│       │   ├── auth/          # login, register, change-password, me, admin bootstrap runner
-│       │   ├── customer/
-│       │   ├── health/
-│       │   ├── transaction/
-│       │   ├── transfer/
-│       │   └── user/          # user management + reset-password
-│       └── infra/             # Cross-cutting concerns
-│           ├── config/        # OpenAPI and web configuration
-│           ├── dto/           # Transversal DTOs (PageResponse)
-│           ├── exception/     # Business exceptions and global handler
-│           └── security/      # JWT filter, MustChangePassword filter, security config, OwnershipValidator
-├── database/migration/        # Flyway migrations (V1–V8)
+├── backend/novabank-api/
+│   ├── src/main/
+│   │   ├── java/com/novabank/
+│   │   │   ├── features/
+│   │   │   │   ├── account/
+│   │   │   │   ├── auth/
+│   │   │   │   ├── customer/
+│   │   │   │   ├── health/
+│   │   │   │   ├── transaction/
+│   │   │   │   ├── transfer/
+│   │   │   │   └── user/
+│   │   │   └── infra/
+│   │   │       ├── config/
+│   │   │       ├── dto/
+│   │   │       ├── exception/
+│   │   │       └── security/
+│   │   └── resources/             # application-*.yml profiles
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── .env.example
+│   ├── pom.xml
+│   └── mvnw
+├── database/
+│   ├── init/                      # Postgres init (creates novabank_test)
+│   └── migration/                 # Flyway migrations (V1–V8)
 ├── docs/
-├── project-evolution/
 ├── .env.example
 ├── docker-compose.yml
 └── README.md
@@ -78,13 +87,11 @@ novabank/
 git clone https://github.com/hardyrany/novabank.git
 cd novabank
 
-# 2. Configure environment variables (TWO files required)
+# 2. Configure environment variables (two files)
 cp .env.example .env
-cp .env.example backend/novabank-api/.env
-# edit BOTH files with your local database credentials
-# variables: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DB_USERNAME, DB_PASSWORD, DB_NAME, ADMIN_EMAIL, ADMIN_PASSWORD
+cp backend/novabank-api/.env.example backend/novabank-api/.env
 
-# 3. Start the database (PostgreSQL on port 5433)
+# 3. Start the database
 docker-compose up -d
 
 # 4. Run the application
@@ -95,22 +102,82 @@ cd backend/novabank-api
 ./mvnw test
 ```
 
-Two `.env` files are required:
-
-- `novabank/.env` — read by `docker-compose.yml`
-- `novabank/backend/novabank-api/.env` — read by Spring Boot via `springboot4-dotenv`
-
-Both must have the same database credentials.
-
-PostgreSQL is exposed on host port **5433** (container port 5432) to avoid conflicts with local installations.
+PostgreSQL is exposed on host port **5433** to avoid conflicts with local installations. On first startup, `database/init/01-create-test-db.sh` also creates `novabank_test`.
 
 ---
 
-## Available Endpoints (v0.4.1)
+## Deployment
+
+### Local (Docker)
+
+Build the image and run it on the same Docker network as the Postgres container (started by `docker-compose up -d`):
+
+```bash
+cd backend/novabank-api
+docker build -t novabank-api:local .
+
+docker run --rm -p 8080:8080 \
+  --network novabank_novabank-network \
+  -e SPRING_PROFILES_ACTIVE=staging \
+  -e DB_HOST=novabank-postgres \
+  -e DB_PORT=5432 \
+  -e DB_NAME=novabank_dev \
+  -e DB_USERNAME=admin \
+  -e DB_PASSWORD=admin123 \
+  -e JWT_SECRET=local-testing-secret-32-chars-min \
+  -e ADMIN_EMAIL=admin@novabank.local \
+  -e ADMIN_PASSWORD=ChangeMe123! \
+  novabank-api:local
+```
+
+The API starts on `http://localhost:8080`. Flyway runs the migrations from inside the JAR.
+
+**Note:** the container joins the Docker network created by `docker-compose`. `DB_HOST` is the Postgres **container name** (`novabank-postgres`), not `host.docker.internal`; `DB_PORT` is the internal port (`5432`), not the host mapping (`5433`).
+
+### Production (Render + Neon)
+
+**Prerequisites:** free accounts at https://render.com and https://neon.tech (no credit card required).
+
+#### 1. Neon database
+
+Create a project in Neon. Note the **Host**, **Database**, **User** and **Password**.
+
+#### 2. Render Web Service
+
+1. **New → Web Service** → connect the GitHub repository.
+2. Configure:
+   - **Runtime:** `Docker`
+   - **Dockerfile path:** `backend/novabank-api/Dockerfile`
+   - **Instance type:** `Free`
+3. Environment variables:
+
+| Key | Value |
+|-----|-------|
+| `DB_HOST` | Neon host |
+| `DB_NAME` | Neon database |
+| `DB_USERNAME` | Neon user |
+| `DB_PASSWORD` | Neon password |
+| `JWT_SECRET` | random 32+ char string (`openssl rand -base64 32`) |
+| `ADMIN_EMAIL` | `admin@novabank.local` |
+| `ADMIN_PASSWORD` | strong password (change on first login) |
+
+4. Deploy.
+
+**Result:** `https://novabank-api.onrender.com` (Swagger UI at `/swagger-ui.html`, health at `/actuator/health`).
+
+The bootstrap admin is created with `mustChangePassword = true` — the first login forces a password change.
+
+### Uptime monitoring
+
+Render's free tier sleeps the service after 15 minutes of inactivity (cold start: 30–60s). Use [UptimeRobot](https://uptimerobot.com) to ping `/actuator/health` every 5 minutes and keep it warm.
+
+---
+
+## Available Endpoints (v1.0.0)
 
 The full, interactive reference is available in Swagger UI (see [API Documentation](#api-documentation)).
 
-> **List endpoints** (marked with 🔢) accept `?page=&size=&sort=` and return a `PageResponse<T>` object. See [Pagination](#pagination).
+> **List endpoints** (marked with 🔢) accept `?page=&size=&sort=` and return a `PageResponse<T>`. See [Pagination](#pagination).
 
 ### Auth
 
@@ -118,8 +185,8 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 |---|---|---|
 | POST | `/api/v1/auth/login` | Public |
 | POST | `/api/v1/auth/register` (creates role USER) | Public |
-| POST | `/api/v1/auth/change-password` (changes own password) | Any authenticated |
-| GET | `/api/v1/auth/me` (current user) | Any authenticated |
+| POST | `/api/v1/auth/change-password` | Any authenticated |
+| GET | `/api/v1/auth/me` | Any authenticated |
 
 ### User
 
@@ -128,9 +195,7 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | POST | `/api/v1/users` | ADMIN |
 | 🔢 GET | `/api/v1/users` | ADMIN, SUPPORT |
 | GET | `/api/v1/users/{id}` | ADMIN, SUPPORT |
-| POST | `/api/v1/users/{id}/reset-password` (generates a temporary password, forces change on next request) | ADMIN |
-
-**Note:** `/users/me` was moved to `/auth/me` in the `auth-me` slice.
+| POST | `/api/v1/users/{id}/reset-password` | ADMIN |
 
 ### Customer
 
@@ -152,7 +217,7 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 | 🔢 GET | `/api/v1/accounts/active` | ADMIN, SUPPORT |
 | GET | `/api/v1/accounts/account-number/{accountNumber}` | ADMIN, SUPPORT |
 | PUT | `/api/v1/accounts/{id}` | ADMIN, SUPPORT |
-| DELETE | `/api/v1/accounts/{id}` (soft delete) | ADMIN, SUPPORT |
+| DELETE | `/api/v1/accounts/{id}` | ADMIN, SUPPORT |
 | PATCH | `/api/v1/accounts/{id}/activate` | ADMIN, SUPPORT |
 | GET | `/api/v1/accounts/{id}` | ADMIN, SUPPORT, USER (own) |
 | GET | `/api/v1/accounts/{id}/balance` | ADMIN, SUPPORT, USER (own) |
@@ -166,7 +231,7 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 
 | Method | Endpoint | Auth |
 |---|---|---|
-| POST | `/api/v1/transfers` (ownership validated on the source account) | ADMIN, SUPPORT, USER (own source) |
+| POST | `/api/v1/transfers` | ADMIN, SUPPORT, USER (own source) |
 
 ### Health
 
@@ -179,107 +244,51 @@ The full, interactive reference is available in Swagger UI (see [API Documentati
 
 ## Authentication
 
-The API uses JWT (JSON Web Token) for authentication.
-
-1. Register (`POST /api/v1/auth/register`, public) or use existing credentials
-2. Login: `POST /api/v1/auth/login` returns a JWT
-3. Send the token on subsequent requests: `Authorization: Bearer <token>`
+The API uses JWT. Send the token on requests: `Authorization: Bearer <token>`.
 
 ```bash
-# Login
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"password123"}'
-
-# Response
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "email": "user@example.com",
-  "role": "USER"
-}
-
-# Use token
-curl http://localhost:8080/api/v1/accounts/<account-uuid> \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
 ```
 
 ### Authorization (RBAC)
 
-The API enforces role-based access control with three roles:
-
 | Role | Capabilities |
 |---|---|
-| ADMIN | Manage users (create with any role), view users, manage customers and accounts, reset other users' passwords |
-| SUPPORT | View users, manage customers and accounts, execute deposits/withdrawals/transfers on any account |
+| ADMIN | Manage users, customers, accounts; reset passwords |
+| SUPPORT | View users; manage customers and accounts; execute deposits/withdrawals/transfers |
 | USER | View and operate only their own accounts |
 
-**Ownership validation:** a USER can only access their own accounts. ADMIN and SUPPORT have unrestricted access.
-
-**Bootstrap:** the first ADMIN is created on application startup via `AdminBootstrapRunner`, reading `ADMIN_EMAIL` and `ADMIN_PASSWORD` from environment variables (12-Factor App). The bootstrap admin is created with `mustChangePassword = true` — the first login forces a password change before any other endpoint can be used.
+**Bootstrap:** the first ADMIN is created on startup via `AdminBootstrapRunner` (env vars `ADMIN_EMAIL`, `ADMIN_PASSWORD`), with `mustChangePassword = true`.
 
 ### Password management
 
-The API enforces a "must change password" rule on top of authentication:
+When `mustChangePassword = true`, all endpoints except `/auth/login`, `/auth/register`, `/auth/me` and `/auth/change-password` return **403 Forbidden**. `POST /auth/change-password` clears the flag.
 
-1. When a user has `mustChangePassword = true`, every request to a non-allow-listed endpoint returns **403 Forbidden** with `{"error":"Forbidden","message":"Password change required before accessing this resource","status":403}`.
-2. Allow-listed endpoints (accessible while the flag is active): `/auth/login`, `/auth/register`, `/auth/me`, `/auth/change-password`.
-3. `POST /auth/change-password` clears the flag on success.
-4. Admins can reset another user's password via `POST /users/{id}/reset-password` — the system generates a 12-char temporary password and returns it once in the response. The target user is flagged `mustChangePassword = true`.
-
-**Two-layer enforcement:**
-- `MustChangePasswordFilter` (servlet filter, runs after `JwtAuthenticationFilter`) — blocks non-allow-listed endpoints when the flag is active.
-- `AuthService.changePassword` — validates the current password and clears the flag on success.
+Admins can reset another user's password via `POST /users/{id}/reset-password` — a 12-char temporary password is returned once.
 
 ### Pagination
 
-All list endpoints accept pagination query parameters:
+| Param | Default |
+|-------|---------|
+| `page` | `0` |
+| `size` | `20` |
+| `sort` | (varies) |
 
-| Param | Default | Description |
-|-------|---------|-------------|
-| `page` | `0` | Page index (zero-based) |
-| `size` | `20` | Page size |
-| `sort` | (varies) | Field name; direction via `?sort=field,asc\|desc` |
-
-**Response shape (`PageResponse<T>`):**
-
-```json
-{
-  "content": [ ... ],
-  "page": 0,
-  "size": 20,
-  "totalElements": 42,
-  "totalPages": 3,
-  "first": true,
-  "last": false
-}
-```
-
-**Paginated endpoints:** `GET /customers`, `GET /customers/search`, `GET /accounts/active`, `GET /accounts/customer/{customerId}`, `GET /accounts/{id}/transactions`, `GET /users`.
-
-**Example:**
-
-```bash
-curl "http://localhost:8080/api/v1/customers?page=0&size=10&sort=id" \
-  -H "Authorization: Bearer <token>"
-```
+Response shape: `{ "content": [...], "page": 0, "size": 20, "totalElements": 42, "totalPages": 3, "first": true, "last": false }`
 
 ---
 
 ## Database Migrations
 
-Managed by Flyway. Migration scripts (V1–V8) live in `database/migration/`, covering customers, accounts (optimistic locking, balance check), transactions, users (case-insensitive email) and the `must_change_password` flag on users.
+Managed by Flyway. Scripts V1–V8 in `database/migration/`. Copied into the JAR at build time (`maven-resources-plugin`).
 
 ---
 
 ## Tests
 
-The project has ~117 tests (unit tests for services, filters and bootstrap runner, plus integration tests).
-
-Three end-to-end integration tests validate the complete flows:
-
-- **`MVPIntegrationTest`** — full MVP flow with JWT: create user, login, create customer, create account, deposit, transfer, view transaction history
-- **`RbacIntegrationTest`** — RBAC matrix (401/403/200/201) for all three roles: user management, customer management, account access, ownership on deposits and transfers
-- **`ResetPasswordIntegrationTest`** — admin resets a user's password, the user logs in with the temporary one, is blocked (403) until changing it, then regains access
+~117 tests (unit + integration).
 
 ```bash
 ./mvnw test -Dtest=MVPIntegrationTest
@@ -287,12 +296,10 @@ Three end-to-end integration tests validate the complete flows:
 ./mvnw test -Dtest=ResetPasswordIntegrationTest
 ```
 
-### Full Verification (with Dependency Check)
-
-To run the complete build used in CI — tests plus OWASP Dependency-Check against the NVD database — export an NVD API key first ([request one here](https://nvd.nist.gov/developers/request-an-api-key)):
+Full verification (with OWASP Dependency-Check):
 
 ```bash
-export NVD_API_KEY=your-nvd-api-key
+export NVD_API_KEY=your-key
 ./mvnw clean verify -Dspring.profiles.active=test -DnvdApiKey=$NVD_API_KEY
 ```
 
@@ -303,13 +310,11 @@ export NVD_API_KEY=your-nvd-api-key
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
-Use the **Authorize** button in Swagger UI to provide your JWT token and test protected endpoints.
-
 ---
 
 ## Releases
 
-Current version: **v0.4.1** — MVP with authentication, RBAC, password management and pagination. See [CHANGELOG.md](CHANGELOG.md) for the history of every release.
+Current version: **v1.0.0** — First public release. See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -317,10 +322,10 @@ Current version: **v0.4.1** — MVP with authentication, RBAC, password manageme
 
 | Phase | Description |
 |---|---|
-| v1.0.0 | First real release — MVP complete + scalable |
+| — | Backend complete. Future work: frontend, additional modules. |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE).

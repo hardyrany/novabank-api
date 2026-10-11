@@ -15,7 +15,7 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: false
-        locations: filesystem:../../database/migration
+        locations: classpath:db/migration
         clean-disabled: true
 
 logging:
@@ -24,8 +24,10 @@ logging:
         org.springframework: WARN
 
 jwt:
+    # ⚠️ TEST ONLY — not a real secret. Never reuse in production
     secret: test-secret-key-for-testing-only-1234567890
     expiration-ms: 1800000
 
+# ⚠️ TEST ONLY — fake credentials for the bootstrap admin in integration tests.
 ADMIN_EMAIL: admin@novabank.local
 ADMIN_PASSWORD: TestAdminPass123!
