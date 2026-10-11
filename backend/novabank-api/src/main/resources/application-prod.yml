@@ -1,0 +1,48 @@
+# ===== PRODUCTION PROFILE =====
+# Environment variables required:
+#   DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD  (from Neon)
+#   JWT_SECRET                                   (strong random secret)
+#   ADMIN_EMAIL, ADMIN_PASSWORD                  (bootstrap admin)
+#   PORT                                         (injected by Render, defaults to 8080)
+
+spring:
+    datasource:
+        url: jdbc:postgresql://${DB_HOST}/${DB_NAME}?sslmode=require
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+        hikari:
+            maximum-pool-size: 5
+            minimum-idle: 1
+            connection-timeout: 30000
+            idle-timeout: 600000
+            max-lifetime: 1800000
+
+    jpa:
+        hibernate:
+            ddl-auto: validate
+        show-sql: false
+        open-in-view: false
+
+    flyway:
+        enabled: true
+        baseline-on-migrate: false
+        locations: classpath:db/migration
+        clean-disabled: true
+
+server:
+    port: ${PORT:8080}
+
+logging:
+    level:
+        com.novabank: INFO
+        org.springframework: WARN
+        org.hibernate.SQL: WARN
+        org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 1800000
+
+ADMIN_EMAIL: ${ADMIN_EMAIL}
+ADMIN_PASSWORD: ${ADMIN_PASSWORD}

@@ -23,5 +23,6 @@ logging:
         org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 jwt:
+    # ⚠️ DEVELOPMENT ONLY — not a real secret. Never reuse in production.
     secret: dev-secret-key-for-development-only-1234567890
     expiration-ms: 1800000
